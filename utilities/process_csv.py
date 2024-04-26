@@ -3,7 +3,7 @@ import numpy as np
 import csv
 
 #select trajectory number
-number = 5
+number = 16
 path = r'trajectories\raw_trajectories\hand_tracking'
 path += str(number) + '.csv'
 
@@ -74,8 +74,8 @@ df_right = df_right.sort_values(by='time', ascending=True)
 df_left = df_left.sort_values(by='time', ascending=True)
 
 print('-----> '+ str(df_length - (len(df_right.index) + len(df_left.index) )) + ' bad lines have been deleted' )
-print(df_right)
-print(df_left)
+#print(df_right)
+#print(df_left)
 
 # Save the filtered DataFrames to new CSV files
 df_right.to_csv(r'trajectories\right_hand\right_' + str(number) + '.csv', index=False)
