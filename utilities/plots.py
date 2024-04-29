@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.ticker import FuncFormatter
-
 
 def plot2d(x, y):
     # Plotting the points
@@ -32,56 +30,39 @@ def plot_3d_line(df):
     plt.show()
 
 
-def draw_3d_curve(M1,M2,p, prime, pg1, pg2, num_points=100):
-    """plots curves in 3D space from a cubic polynomial
+def draw_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
-    :param M1: Coefficient matrix
-    :param num_points: step size
-    """
-    t = np.linspace(0, 1, num_points)
+    ax = plt.figure().add_subplot(projection='3d')
+    t = np.linspace(0, 1, 100)
 
-    # first polynomial
-    x1 = M1[0, 0] * t ** 3 + M1[0, 1] * t ** 2 + M1[0, 2] * t + M1[0, 3]
-    y1 = M1[1, 0] * t ** 3 + M1[1, 1] * t ** 2 + M1[1, 2] * t + M1[1, 3]
-    z1 = M1[2, 0] * t ** 3 + M1[2, 1] * t ** 2 + M1[2, 2] * t + M1[2, 3]
+    # plot cubic polynomial
+    for m in M:
+        x = np.polyval(m[0], t)
+        y = np.polyval(m[1], t)
+        z = np.polyval(m[2], t)
 
-    #second polynomial
-    x2 = M2[0, 0] * t ** 3 + M2[0, 1] * t ** 2 + M2[0, 2] * t + M2[0, 3]
-    y2 = M2[1, 0] * t ** 3 + M2[1, 1] * t ** 2 + M2[1, 2] * t + M2[1, 3]
-    z2 = M2[2, 0] * t ** 3 + M2[2, 1] * t ** 2 + M2[2, 2] * t + M2[2, 3]
+        ax.plot(x, y, z)
 
-    #boundry conditions
-    x1[0] = p[0]
-    y1[0] = p[1]
-    z1[0] = p[2]
+    # plot all points
+    ax.scatter(p[0, 0], p[1, 0], p[2, 0], label='p', color='black')
+    ax.scatter(pn[0, 0], pn[1, 0], pn[2, 0], label='pn', color='black')
 
-    x2[0] = p[0]
-    y2[0] = p[1]
-    z2[0] = p[2]
+    for g in goals:
+        ax.scatter(g[0, 0], g[1, 0], g[2, 0], label='g', color='green')
 
-    x1[-1] = pg1[0]
-    y1[-1] = pg1[1]
-    z1[-1] = pg1[2]
+    for point in path_points:
+        ax.scatter(point[0, 0], point[1, 0], point[2, 0], label='ph', color='blue')
 
-    x2[-1] = pg2[0]
-    y2[-1] = pg2[1]
-    z2[-1] = pg2[2]
-
-
-    # plot 3d curve
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-    ax.plot(x1, y1, z1, label='PG_1') #first polynomial
-    ax.plot(x2, y2, z2, label='PG_2') #second polynomial
+    # plot tangent vectors
+    ax.quiver(pn[0][0], pn[1][0], pn[2][0], pn_prime[0][0], pn_prime[1][0],
+              pn_prime[2][0], length=1,arrow_length_ratio=0.1, color='black', label='tangential vector')
+    for i in range(len(path_points)):
+        ax.quiver(path_points[i][0], path_points[i][1], path_points[i][2], tangential_vectors[i][0],
+                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.1, arrow_length_ratio=0.1, color='blue',
+                  label='tangential vector')
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    plt.title('3D')
-    ax.legend(loc='upper left')
-
-    formatter = FuncFormatter(lambda x, pos: "{:.2f}".format(x))
-    ax.xaxis.set_major_formatter(formatter)
-
+    ax.legend()
     plt.show()
