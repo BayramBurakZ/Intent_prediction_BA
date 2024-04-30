@@ -1,6 +1,8 @@
+import numpy as np
 import pandas as pd
 from utilities.plots import *
 from utilities.trajectory import *
+from utilities.probability import *
 
 path = r'trajectories\chosen_trajectories\test.csv'
 df = pd.read_csv(path)
@@ -8,7 +10,7 @@ df = pd.read_csv(path)
 # testing values
 pg1 = np.array([[20.8309], [10.2293], [0.1475]])
 pg2 = np.array([[0.8309], [-0.2293], [0.1475]])
-pg3 = np.array([[10.8309], [-10.2293], [0.1475]])
+pg3 = np.array([[-100.8309], [-100.2293], [0.1475]])
 
 pp = np.array([[df['x'].iloc[0]], [df['y'].iloc[0]], [df['z'].iloc[0]]])
 p = np.array([[df['x'].iloc[4]], [df['y'].iloc[4]], [df['z'].iloc[4]]])
@@ -18,9 +20,8 @@ p_t = df['time'].iloc[0]
 pn_t = df['time'].iloc[4]
 pn2_t = df['time'].iloc[22]
 
-#goals = (pg1, pg2, pg3)
-goals = []
-goals.append(pg1)
+goals = [pg1, pg2, pg3]
+probability_goals = []
 ########################################################################################################
 
 
@@ -47,3 +48,17 @@ for i in range(len(goals)):
     tangential_vectors.append(normalize(calculate_polynomial(derivatives[i], s)))
 
 draw_3d_curve(trajectories, p, pn, pn_prime, goals, path_points, tangential_vectors)
+
+angles = []
+for t in tangential_vectors:
+    angles.append(calculate_angle(pn_prime, t))
+
+variance = np.var(angles) #population variance
+standard_deviation = np.std(angles)
+mean = np.mean(angles)
+
+normal_distribution(standard_deviation)
+calculate_probability_angle(angles[0], standard_deviation)
+calculate_probability_angle(angles[1], standard_deviation)
+calculate_probability_angle(angles[2], standard_deviation)
+calculate_probability_angle(0.04, standard_deviation)

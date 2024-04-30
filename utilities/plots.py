@@ -1,34 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
-def plot2d(x, y):
-    # Plotting the points
-    plt.plot(x, y, 'ro')
-    plt.title('Sample Point Plot')
-    plt.xlabel('x values')
-    plt.ylabel('y values')
-
-    # Show plot
-    plt.show()
-
-
-def plot_3d_line(df):
-    fig = plt.figure()
-
-    # 3D-Subplot
-    ax = fig.add_subplot(111, projection='3d')
-
-    # draw line between points
-    ax.plot(df['x'], df['y'], df['z'], marker='o')
-
-    ax.set_title('3D')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    plt.show()
-
 
 def draw_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
@@ -55,14 +26,29 @@ def draw_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
     # plot tangent vectors
     ax.quiver(pn[0][0], pn[1][0], pn[2][0], pn_prime[0][0], pn_prime[1][0],
-              pn_prime[2][0], length=1,arrow_length_ratio=0.1, color='black', label='tangential vector')
+              pn[2][0], length=1,arrow_length_ratio=0.1, color='black', label='tangential vector')
     for i in range(len(path_points)):
         ax.quiver(path_points[i][0], path_points[i][1], path_points[i][2], tangential_vectors[i][0],
-                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.1, arrow_length_ratio=0.1, color='blue',
+                  tangential_vectors[i][1], path_points[i][2], length=0.1, arrow_length_ratio=0.1, color='blue',
                   label='tangential vector')
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     ax.legend()
+    plt.show()
+
+def normal_distribution(sigma, mu=0):
+    # Create a range of x values
+    x = np.linspace(-np.pi, np.pi, 1000)
+
+    # Calculate the pdf
+    f = (1 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mu) / sigma) ** 2)
+
+    # Plot the pdf
+    plt.figure()
+    plt.plot(x, f)
+    plt.title('Normal Distribution')
+    plt.xlabel('x')
+    plt.ylabel('Probability Density')
     plt.show()
