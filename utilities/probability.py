@@ -2,40 +2,33 @@ import numpy as np
 from scipy import stats
 
 
-def calculate_angle(pn_prime, p_hat):
-
-    if pn_prime.shape[0] != 2:
+def calculate_angle(v1, v2):
+    """ calculates the angle on x,y plane between two vectors """
+    if v1.shape[0] != 2:
         # remove z
-        pn_prime = pn_prime[:2]
+        v1 = v1[:2]
 
-    if p_hat.shape[0] != 2:
+    if v2.shape[0] != 2:
         # remove z
-        p_hat = p_hat[:2]
+        v2 = v2[:2]
 
-    pn_prime = np.squeeze(pn_prime)
-    p_hat = np.squeeze(p_hat)
+    v1 = np.squeeze(v1)
+    v2 = np.squeeze(v2)
 
-    pn_norm = np.linalg.norm(pn_prime)
-    p_hat_norm = np.linalg.norm(p_hat)
+    v1_norm = np.linalg.norm(v1)
+    v2_norm = np.linalg.norm(v2)
 
-    dot = np.dot(pn_prime, p_hat)
+    dot = np.dot(v1, v2)
 
-    cos_angle = dot / (pn_norm * p_hat_norm)
+    cos_angle = dot / (v1_norm * v2_norm)
 
-    # in degree
-    #angle_degree = np.arccos(cos_angle) * (180.0 / np.pi)
+    return np.arccos(cos_angle)  # in radiance
 
-    # in radiance
-    angle_radian = np.arccos(cos_angle)
-
-
-    return angle_radian
 
 def calculate_probability_angle(angle, sigma, mu=0):
+    p_x = stats.norm.pdf(angle, mu, sigma)
+    print(f'probability for angle: {angle * (180 / np.pi)} degree: {p_x}')
 
-    # calculate pdf vor angle
-    P_x = stats.norm.pdf(angle, mu, sigma)
-    print(f'probability for angle: {angle*(180/np.pi)} degree: {P_x}')
 
 def normalize_probability(all_goals, goal):
-    return goal/(max(1, sum(all_goals)))
+    return goal / (max(1, sum(all_goals)))

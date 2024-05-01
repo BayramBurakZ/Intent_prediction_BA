@@ -40,4 +40,4 @@ df_top_10 = df_top_10.iloc[:, [0, 1, 2, 3]]
 #print(df_top_10[(df_top_10['y'] <= -2)])
 
 print(df_top_10)
-#df_top_10.to_csv(r'..\trajectories\chosen_trajectories\test.csv', index=False)
+df_top_10.to_csv(r'..\trajectories\chosen_trajectories\test_xy_successive.csv', index=False)

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 
 def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
-
     # Parameter
     t = np.linspace(0, 1, 100)
 
@@ -25,14 +24,13 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
         plt.scatter(point[0, 0], point[1, 0], color='blue')
 
     # plot tangent vectors
-    plt.quiver(pn[0][0], pn[1][0],pn_prime[0][0], pn_prime[1][0],
-              color='black', label='tangential vector', linewidths=0.01)
+    plt.quiver(pn[0][0], pn[1][0], pn_prime[0][0], pn_prime[1][0],
+               color='black', label='tangential vector')
 
     for i in range(len(path_points)):
         plt.quiver(path_points[i][0], path_points[i][1], tangential_vectors[i][0],
-                  tangential_vectors[i][1],
-                  color='blue')
-
+                   tangential_vectors[i][1],
+                   color='blue')
 
     plt.title('model function')
     plt.xlabel('X')
@@ -43,7 +41,6 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
 
 def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
-
     ax = plt.figure().add_subplot(projection='3d')
     t = np.linspace(0, 1, 100)
 
@@ -67,17 +64,18 @@ def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
     # plot tangent vectors
     ax.quiver(pn[0][0], pn[1][0], pn[2][0], pn_prime[0][0], pn_prime[1][0],
-              pn[2][0], length=1,arrow_length_ratio=0.1, color='black', label='tangential vector')
+              pn_prime[2][0], length=0.05, arrow_length_ratio=0.1, color='black', label='tangential vector')
 
     for i in range(len(path_points)):
         ax.quiver(path_points[i][0], path_points[i][1], path_points[i][2], tangential_vectors[i][0],
-                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.1, arrow_length_ratio=0.1, color='blue')
+                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.05, arrow_length_ratio=0.1, color='blue')
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     ax.legend()
     plt.show()
+
 
 def plot_normal_distribution(sigma, mu=0):
     # Create a range of x values
