@@ -28,8 +28,7 @@ def calculate_angle(pn_prime, p_hat):
     # in radiance
     angle_radian = np.arccos(cos_angle)
 
-    #print("a",angle_degree)
-    #print(dot)
+
     return angle_radian
 
 def calculate_probability_angle(angle, sigma, mu=0):
@@ -38,5 +37,5 @@ def calculate_probability_angle(angle, sigma, mu=0):
     P_x = stats.norm.pdf(angle, mu, sigma)
     print(f'probability for angle: {angle*(180/np.pi)} degree: {P_x}')
 
-def normalize_probability(p_goals, p_goal):
-    return p_goal/(max(1, sum(p_goals)))
+def normalize_probability(all_goals, goal):
+    return goal/(max(1, sum(all_goals)))
