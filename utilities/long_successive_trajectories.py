@@ -1,7 +1,7 @@
 import pandas as pd
 
 #path = r'trajectories\left_hand\left_10.csv'
-path = r'../trajectories/right_hand/right_9.csv'
+path = r'../trajectories/left_hand/left_9.csv'
 
 df = pd.read_csv(path)
 # new column 'increasing', True if the following line is greater
@@ -40,4 +40,4 @@ df_top_10 = df_top_10.iloc[:, [0, 1, 2, 3]]
 #print(df_top_10[(df_top_10['y'] <= -2)])
 
 print(df_top_10)
-df_top_10.to_csv(r'..\trajectories\chosen_trajectories\test_xy_successive.csv', index=False)
+df_top_10.to_csv(r'..\trajectories\chosen_trajectories\test_xy_successive2.csv', index=False)

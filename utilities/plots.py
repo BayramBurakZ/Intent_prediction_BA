@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import norm
+import statistics
 
 
 def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
@@ -81,12 +83,9 @@ def plot_normal_distribution(sigma, mu=0):
     # Create a range of x values
     x = np.linspace(-np.pi, np.pi, 100)
 
-    # Calculate the pdf
-    f = (1 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mu) / sigma) ** 2)
-
     # Plot the pdf
     plt.figure()
-    plt.plot(x, f)
+    plt.plot(x, norm.pdf(x, mu, sigma))
     plt.title('Normal Distribution')
     plt.xlabel('x')
     plt.ylabel('Probability Density')

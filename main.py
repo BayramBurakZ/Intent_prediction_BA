@@ -4,7 +4,7 @@ from utilities.plots import *
 from utilities.trajectory import *
 from utilities.probability import *
 
-path = r'trajectories\chosen_trajectories\test_xy_successive.csv'
+path = r'trajectories\chosen_trajectories\test.csv'
 df = pd.read_csv(path)
 
 ''' save pgs in csv later '''
@@ -69,11 +69,17 @@ for i in range(min(iterations, max_iterations - 1)):
     for t in tangential_vectors:
         angles.append(calculate_angle(pn_prime, t))
 
-    standard_deviation = np.std(angles)  # population
-    print(standard_deviation)
+    population_deviation = np.std(angles)  # population
+    print(population_deviation)
 
     # TODO: Some samples result in high standard deviation, which results in unusable probabilities.
-    plot_normal_distribution(standard_deviation)
-    calculate_probability_angle(angles[0], standard_deviation)
-    calculate_probability_angle(angles[1], standard_deviation)
-    calculate_probability_angle(angles[2], standard_deviation)
+    plot_normal_distribution(population_deviation)
+    calculate_probability_angle(angles[0], population_deviation)
+    calculate_probability_angle(angles[1], population_deviation)
+    calculate_probability_angle(angles[2], population_deviation)
+
+    sample_deviation = np.std(angles, ddof=1)
+    plot_normal_distribution(population_deviation)
+    calculate_probability_angle(angles[0], sample_deviation)
+    calculate_probability_angle(angles[1], sample_deviation)
+    calculate_probability_angle(angles[2], sample_deviation)
