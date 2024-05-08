@@ -34,25 +34,19 @@ def calculate_polynomial(m, s):
     return np.array([[x], [y], [z]])
 
 
-def prediction_model_matrix(p, p_prime, pg, pg_prime=np.zeros(0)):
+def prediction_model_matrix(p, p_prime, pg):
     """ calculates the coefficients of the trajectory model and it's derivative
 
     :param p: measured point at t_n-1
     :param p_prime: derivative of p
     :param pg: position of goal
-    :param pg_prime: position of goal derivative (used if affordance of a goal applies)
     :return: coefficient matrix of the trajectory model, and it's derivative as a tuple
     """
-    if pg_prime.any():
-        a0 = np.array(p, copy=True)
-        a1 = p_prime
-        a2 = 3 * pg - 3 * p - 2 * p_prime
-        a3 = -2 * pg + 2 * p + p_prime
-    else:
-        a0 = np.array(p, copy=True)
-        a1 = p_prime
-        a2 = 1.5 * pg - 1.5 * p - 1.5 * p_prime
-        a3 = -0.5 * pg + 0.5 * p + 0.5 * p_prime
+
+    a0 = np.array(p, copy=True)
+    a1 = p_prime
+    a2 = 1.5 * pg - 1.5 * p - 1.5 * p_prime
+    a3 = -0.5 * pg + 0.5 * p + 0.5 * p_prime
 
     # coefficients of cubic polynom 3x4 matrix
     mp = np.zeros((3, 4))
@@ -70,4 +64,4 @@ def prediction_model_matrix(p, p_prime, pg, pg_prime=np.zeros(0)):
     for i in range(3):
         Ma[i] = [6 * a3[i, 0], 2 * a2[i, 0]]
     '''
-    return (mp, mv)
+    return mp, mv

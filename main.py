@@ -11,13 +11,15 @@ df = pd.read_csv(path)
 pg1 = np.array([[0.8368], [0.2357], [0.1415]])
 pg2 = np.array([[-0.8368], [0.2357], [0.1415]])
 pg3 = np.array([[-0.8368], [-0.2357], [0.1415]])
+pg4 = np.array([[-1.8368], [-0.2357], [0.1415]])
+pg5 = np.array([[2.8368], [-0.2357], [0.1415]])
 
 goals = [pg1, pg2, pg3]
 probability_goals = []  # accumulated probability of each goal
 
 interval = 10
 max_iterations = len(df) // interval
-iterations = 3
+iterations = 2
 
 ########################################################################################################
 
@@ -78,8 +80,14 @@ for i in range(min(iterations, max_iterations - 1)):
     calculate_probability_angle(angles[1], population_deviation)
     calculate_probability_angle(angles[2], population_deviation)
 
+    plot_normal_distribution(0.25,0)
+    calculate_probability_angle(angles[0], 0.125)
+    calculate_probability_angle(angles[1], 0.125)
+    calculate_probability_angle(angles[2], 0.125)
+    '''
     sample_deviation = np.std(angles, ddof=1)
     plot_normal_distribution(population_deviation)
     calculate_probability_angle(angles[0], sample_deviation)
     calculate_probability_angle(angles[1], sample_deviation)
     calculate_probability_angle(angles[2], sample_deviation)
+    '''

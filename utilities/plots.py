@@ -16,23 +16,27 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
         plt.plot(x, y)
 
     # plot all points
-    plt.scatter(p[0, 0], p[1, 0], label='p', color='black')
+    plt.scatter(p[0, 0], p[1, 0], label='p', color='red')
     plt.scatter(pn[0, 0], pn[1, 0], label='pn', color='black')
 
+    i = 1
     for g in goals:
+        lab = "Pg_" + str(i)
         plt.scatter(g[0, 0], g[1, 0], color='green')
+        plt.text(g[0, 0] + 0.1, g[1, 0], f'{lab}')
+        i += 1
 
     for point in path_points:
         plt.scatter(point[0, 0], point[1, 0], color='blue')
 
     # plot tangent vectors
     plt.quiver(pn[0][0], pn[1][0], pn_prime[0][0], pn_prime[1][0],
-               color='black', label='tangential vector')
+               color='black', label='p\'', scale=10)
 
     for i in range(len(path_points)):
         plt.quiver(path_points[i][0], path_points[i][1], tangential_vectors[i][0],
                    tangential_vectors[i][1],
-                   color='blue')
+                   color='blue', scale=10)
 
     plt.title('model function')
     plt.xlabel('X')
@@ -55,7 +59,7 @@ def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
         ax.plot(x, y, z)
 
     # plot all points
-    ax.scatter(p[0, 0], p[1, 0], p[2, 0], label='p', color='black')
+    ax.scatter(p[0, 0], p[1, 0], p[2, 0], label='p', color='red')
     ax.scatter(pn[0, 0], pn[1, 0], pn[2, 0], label='pn', color='black')
 
     for g in goals:
@@ -66,11 +70,11 @@ def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
     # plot tangent vectors
     ax.quiver(pn[0][0], pn[1][0], pn[2][0], pn_prime[0][0], pn_prime[1][0],
-              pn_prime[2][0], length=0.05, arrow_length_ratio=0.1, color='black', label='tangential vector')
+              pn_prime[2][0], length=0.05, arrow_length_ratio=0.01, color='black', label='p\'')
 
     for i in range(len(path_points)):
         ax.quiver(path_points[i][0], path_points[i][1], path_points[i][2], tangential_vectors[i][0],
-                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.05, arrow_length_ratio=0.1, color='blue')
+                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.5, arrow_length_ratio=0.01, color='blue')
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -81,12 +85,12 @@ def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
 def plot_normal_distribution(sigma, mu=0):
     # Create a range of x values
-    x = np.linspace(-np.pi, np.pi, 100)
+    x = np.linspace(-np.pi * 0.5, np.pi * 0.5, 100)
 
     # Plot the pdf
     plt.figure()
     plt.plot(x, norm.pdf(x, mu, sigma))
-    plt.title('Normal Distribution')
+    #plt.title('Normal Distribution')
     plt.xlabel('x')
-    plt.ylabel('Probability Density')
+    #plt.ylabel('Probability Density')
     plt.show()
