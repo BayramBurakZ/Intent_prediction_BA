@@ -5,21 +5,22 @@ from utilities.trajectory import *
 from utilities.probability import *
 
 path = r'trajectories\chosen_trajectories\test.csv'
+#path = r'trajectories\left_hand\left_9.csv'
 df = pd.read_csv(path)
 
 ''' save pgs in csv later '''
 pg1 = np.array([[0.8368], [0.2357], [0.1415]])
-pg2 = np.array([[-0.8368], [0.2357], [0.1415]])
-pg3 = np.array([[-0.8368], [-0.2357], [0.1415]])
+pg2 = np.array([[-0.8368], [0.2357], [0.3415]])
+pg3 = np.array([[-0.8368], [-0.2357], [-0.1415]])
 pg4 = np.array([[-1.8368], [-0.2357], [0.1415]])
 pg5 = np.array([[2.8368], [-0.2357], [0.1415]])
 
-goals = [pg1, pg2, pg3]
+goals = [pg1, pg2]
 probability_goals = []  # accumulated probability of each goal
 
 interval = 10
 max_iterations = len(df) // interval
-iterations = 2
+iterations = 4
 
 ########################################################################################################
 
@@ -72,18 +73,17 @@ for i in range(min(iterations, max_iterations - 1)):
         angles.append(calculate_angle(pn_prime, t))
 
     population_deviation = np.std(angles)  # population
-    print(population_deviation)
 
     # TODO: Some samples result in high standard deviation, which results in unusable probabilities.
-    plot_normal_distribution(population_deviation)
+    #plot_normal_distribution(population_deviation)
     calculate_probability_angle(angles[0], population_deviation)
     calculate_probability_angle(angles[1], population_deviation)
-    calculate_probability_angle(angles[2], population_deviation)
+    #calculate_probability_angle(angles[2], population_deviation)
 
-    plot_normal_distribution(0.25,0)
+    #plot_normal_distribution(0.25,0)
     calculate_probability_angle(angles[0], 0.125)
     calculate_probability_angle(angles[1], 0.125)
-    calculate_probability_angle(angles[2], 0.125)
+    #calculate_probability_angle(angles[2], 0.125)
     '''
     sample_deviation = np.std(angles, ddof=1)
     plot_normal_distribution(population_deviation)

@@ -16,33 +16,39 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
         plt.plot(x, y)
 
     # plot all points
-    plt.scatter(p[0, 0], p[1, 0], label='p', color='red')
-    plt.scatter(pn[0, 0], pn[1, 0], label='pn', color='black')
+    plt.scatter(p[0, 0], p[1, 0], label='t-1', color='red')
+    plt.scatter(pn[0, 0], pn[1, 0], label='t', color='black')
 
-    i = 1
+    i=0
     for g in goals:
         lab = "Pg_" + str(i)
         plt.scatter(g[0, 0], g[1, 0], color='green')
-        plt.text(g[0, 0] + 0.1, g[1, 0], f'{lab}')
+        plt.text(g[0, 0] - 0.1, g[1, 0], f'{lab}')
         i += 1
 
+
     for point in path_points:
-        plt.scatter(point[0, 0], point[1, 0], color='blue')
+        plt.scatter(point[0, 0], point[1, 0], color='purple')
 
     # plot tangent vectors
-    plt.quiver(pn[0][0], pn[1][0], pn_prime[0][0], pn_prime[1][0],
-               color='black', label='p\'', scale=10)
+    plt.quiver(pn[0][0], pn[1][0], pn_prime[0][0], pn_prime[1][0], scale=10, color='black', label='p\'')
 
-    for i in range(len(path_points)):
+    plt.quiver(path_points[1][0], path_points[1][1], tangential_vectors[1][0],
+               tangential_vectors[1][1],
+               color='purple', scale=10, label=' p_hat\'')
+    for i in range(len(path_points)-1):
         plt.quiver(path_points[i][0], path_points[i][1], tangential_vectors[i][0],
                    tangential_vectors[i][1],
-                   color='blue', scale=10)
+                   color='purple', scale=10)
+
+    #plt.xlim(-1,1)
+    #plt.ylim(-0.5 , 0.5)
 
     plt.title('model function')
     plt.xlabel('X')
     plt.ylabel('Y')
-    plt.grid(True)
-    plt.legend()
+    plt.grid(False)
+    plt.legend()#loc='lower left'
     plt.show()
 
 
@@ -70,11 +76,11 @@ def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
     # plot tangent vectors
     ax.quiver(pn[0][0], pn[1][0], pn[2][0], pn_prime[0][0], pn_prime[1][0],
-              pn_prime[2][0], length=0.05, arrow_length_ratio=0.01, color='black', label='p\'')
+              pn_prime[2][0], length=0.1, normalize=True, arrow_length_ratio=0.2, color='black', label='p\'')
 
     for i in range(len(path_points)):
         ax.quiver(path_points[i][0], path_points[i][1], path_points[i][2], tangential_vectors[i][0],
-                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.5, arrow_length_ratio=0.01, color='blue')
+                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.1, normalize=True, arrow_length_ratio=0.2, color='blue')
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
