@@ -2,8 +2,10 @@ import numpy as np
 
 
 def position_derivative(p1, p2, t1, t2):
-    """ calculates the approximated derivative of two points with respect to time """
-    return (p2 - p1) / (t2 - t1)
+    """ calculates the approximated normalized direction of two points with respect to time """
+    d = (p2 - p1) / (t2 - t1)
+    return d / np.linalg.norm(d)
+
 
 
 def normalize(p):
@@ -19,7 +21,7 @@ def calculate_path_coordinate(p, pn, pg):
     :param pg: position of goal
     :return: predicted path coordinate
     """
-    # TODO: some new points don't translate well
+    # TODO: some new points don't translate well (consider the case of backwards motion!)
     distance_a = np.linalg.norm(pn - p)
     distance_b = np.linalg.norm(pg - pn)
     return distance_a / (distance_a + distance_b)

@@ -33,10 +33,7 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
     # plot tangent vectors
     plt.quiver(pn[0][0], pn[1][0], pn_prime[0][0], pn_prime[1][0], scale=10, color='black', label='p\'')
 
-    plt.quiver(path_points[1][0], path_points[1][1], tangential_vectors[1][0],
-               tangential_vectors[1][1],
-               color='purple', scale=10, label=' p_hat\'')
-    for i in range(len(path_points)-1):
+    for i in range(len(path_points)):
         plt.quiver(path_points[i][0], path_points[i][1], tangential_vectors[i][0],
                    tangential_vectors[i][1],
                    color='purple', scale=10)

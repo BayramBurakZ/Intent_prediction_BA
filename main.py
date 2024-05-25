@@ -4,6 +4,7 @@ from utilities.plots import *
 from utilities.trajectory import *
 from utilities.probability import *
 
+
 path = r'trajectories\chosen_trajectories\test.csv'
 #path = r'trajectories\left_hand\left_9.csv'
 df = pd.read_csv(path)
@@ -15,12 +16,13 @@ pg3 = np.array([[-0.8368], [-0.2357], [-0.1415]])
 pg4 = np.array([[-1.8368], [-0.2357], [0.1415]])
 pg5 = np.array([[2.8368], [-0.2357], [0.1415]])
 
-goals = [pg1, pg2]
+
+goals = [pg1, pg2,pg3]
 probability_goals = []  # accumulated probability of each goal
 
 interval = 10
 max_iterations = len(df) // interval
-iterations = 4
+iterations = 2
 
 ########################################################################################################
 
@@ -34,6 +36,9 @@ pp_t = df['time'].iloc[0]
 p_t = df['time'].iloc[10]
 pn_t = df['time'].iloc[20]
 
+p_prime = position_derivative(pp, p, pp_t, p_t)  # derivative of points t_n-2, t_n-1
+pn_prime = position_derivative(p, pn, p_t, pn_t)  # derivative of points t_n-1, t_n
+
 for i in range(min(iterations, max_iterations - 1)):
 
     # update observed positions
@@ -41,12 +46,16 @@ for i in range(min(iterations, max_iterations - 1)):
         pp = p
         p = pn
         pn = np.array([[df['x'].iloc[i + interval]], [df['y'].iloc[i + interval]], [df['z'].iloc[i + interval]]])
+
         pp_t = p_t
         p_t = pn_t
         pn_t = df['time'].iloc[i + interval]
 
-    p_prime = normalize(position_derivative(pp, p, pp_t, p_t))  # derivative of points t_n-2, t_n-1
-    pn_prime = normalize(position_derivative(p, pn, p_t, pn_t))  # derivative of points t_n-1, t_n
+        p_prime = pn_prime
+        pn_prime = position_derivative(p, pn, p_t, pn_t)  # derivative of points t_n-1, t_n
+
+        print(p, pn, p_prime, pn_prime)
+
 
     ''' save model trajectories and it's derivatives for each goal '''
     trajectories = []
@@ -64,7 +73,7 @@ for i in range(min(iterations, max_iterations - 1)):
         path_points.append(calculate_polynomial(trajectories[j], s))
         tangential_vectors.append(normalize(calculate_polynomial(derivatives[j], s)))
 
-    plot_3d_curve(trajectories, p, pn, pn_prime, goals, path_points, tangential_vectors)
+    #plot_3d_curve(trajectories, p, pn, pn_prime, goals, path_points, tangential_vectors)
     plot_2d_curve(trajectories, p, pn, pn_prime, goals, path_points, tangential_vectors)
 
     ''' calculate the angles between the tangent pn_prime and all predicted tangents  '''
@@ -78,7 +87,7 @@ for i in range(min(iterations, max_iterations - 1)):
     #plot_normal_distribution(population_deviation)
     calculate_probability_angle(angles[0], population_deviation)
     calculate_probability_angle(angles[1], population_deviation)
-    #calculate_probability_angle(angles[2], population_deviation)
+    calculate_probability_angle(angles[2], population_deviation)
 
     #plot_normal_distribution(0.25,0)
     calculate_probability_angle(angles[0], 0.125)

@@ -27,7 +27,7 @@ def calculate_angle(v1, v2):
 
 def calculate_probability_angle(angle, sigma, mu=0):
     p_x = stats.norm.pdf(angle, mu, sigma)
-    print(f'probability for angle: {angle * (180 / np.pi)} degree: {p_x}')
+    #print(f'probability for angle: {angle * (180 / np.pi)} degree: {p_x}')
 
 
 def normalize_probability(all_goals, goal):
