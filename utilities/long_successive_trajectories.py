@@ -1,7 +1,7 @@
 import pandas as pd
 
-#path = r'trajectories\left_hand\left_10.csv'
-path = r'../trajectories/left_hand/left_9.csv'
+#path = r'data_csv\left_hand\left_10.csv'
+path = r'../data_csv/left_hand/left_9.csv'
 
 df = pd.read_csv(path)
 # new column 'increasing', True if the following line is greater
@@ -16,10 +16,10 @@ df_increasing = df[df['increasing']]
 # count number of data in a group and sort it
 group_counts = df_increasing['group'].value_counts().sort_values(ascending=False)
 
-# get the 10 longest trajectories
+# get the 10 longest data_csv
 top_10_groups = group_counts.head(1).index
 
-# df with only 10 longest trajectories
+# df with only 10 longest data_csv
 df_top_10 = df_increasing[df_increasing['group'].isin(top_10_groups)]
 
 '''

@@ -4,7 +4,7 @@ import csv
 
 #select trajectory number
 number = 16
-path = r'trajectories\raw_trajectories\hand_tracking'
+path = r'data_csv\raw_trajectories\hand_tracking'
 path += str(number) + '.csv'
 
 
@@ -78,5 +78,5 @@ print('-----> '+ str(df_length - (len(df_right.index) + len(df_left.index) )) + 
 #print(df_left)
 
 # Save the filtered DataFrames to new CSV files
-df_right.to_csv(r'trajectories\right_hand\right_' + str(number) + '.csv', index=False)
-df_left.to_csv(r'trajectories\left_hand\left_' + str(number) + '.csv', index=False)
+df_right.to_csv(r'data_csv\right_hand\right_' + str(number) + '.csv', index=False)
+df_left.to_csv(r'data_csv\left_hand\left_' + str(number) + '.csv', index=False)

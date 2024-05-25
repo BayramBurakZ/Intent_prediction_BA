@@ -1,11 +1,10 @@
 import numpy as np
 
 
-def position_derivative(p1, p2, t1, t2):
-    """ calculates the approximated normalized direction of two points with respect to time """
-    d = (p2 - p1) / (t2 - t1)
-    return d / np.linalg.norm(d)
-
+def position_derivative(p1, p2):
+    """ calculates the normalized direction of two points """
+    d = (p2-p1)
+    return (p2-p1) / np.linalg.norm(d)
 
 
 def normalize(p):

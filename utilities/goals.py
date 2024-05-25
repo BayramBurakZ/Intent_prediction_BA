@@ -1,22 +1,11 @@
 import pandas as pd
 
-# Coordinates of goals || Array numbered according to Blender objects
-'''
-goals_study = [[np.nan, np.nan],[np.nan, np.nan],[0.2,-0.4,0.03],[0.3, -0.4,0.03],[0.4, -0.4,0.03],[0.5, -0.4,0.03],[0.6, -0.4,0.03], # white long
-         [0.2,-0.3,0.03],[0.3,-0.3,0.03],[0.4,-0.3,0.03],[0.5,-0.3,0.03],[0.6,-0.3,0.03],[0.3,-0.2,0.03],[0.4,-0.2,0.03],[0.5,-0.2,0.03],[0.6,-0.2,0.03], # white short
-         [0.3, 0.2,0.03],[0.4,0.2,0.03],[0.5,0.2,0.03],[0.6,0.2,0.03], # red short
-         [0.2,0.3,0.03],[0.2,0.3,0.03],[0.2,0.4,0.03], # red long
-         [0.3,0.3,0.03],[0.4,0.3,0.03],[0.5,0.3,0.03],[0.6,0.3,0.03], # short green
-         [0.3, 0.4,0.03],[0.4,0.4,0.03],[0.5,0.4,0.03],[0.6,0.4,0.03], # short purple
-         [0.3,0.5,0.03],[0.3,0.5,0.03],[0.3,0.5,0.03]] # short blue
-'''
-
 # Dataframe for goals
-data = {'ID': list(range(3, 35)),
-        'x': [3, 4],
-        'y':[3, 4]
-        }
+path = r'../data_csv/goals\goals.csv'
+df = pd.read_csv(path)
 
+df['active'] = [True] * 32
+df['sample'] = [0] * 32
+df['probability'] = [0] * 32
 
-liste = list(range(3, 35))
-print(liste)
+print(df)
