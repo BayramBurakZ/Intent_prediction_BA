@@ -33,3 +33,4 @@ def euclidean_distance(column_vector1, column_vector2):
         raise ValueError("Vectors must have the shape (3,1).")
 
     return np.linalg.norm(column_vector1 - column_vector2)
+

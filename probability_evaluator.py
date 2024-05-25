@@ -91,3 +91,4 @@ def probability_normalization_divisor(probability_all_goals):
     return max(1, sum(probability_all_goals))
 
 
+
