@@ -89,3 +89,5 @@ def calculate_probability_goal(cumulative_probability, angle_probability):
 
 def probability_normalization_divisor(probability_all_goals):
     return max(1, sum(probability_all_goals))
+
+

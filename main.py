@@ -1,54 +1,49 @@
-import numpy as np
+import time
+import queue
+import threading
+#from process import DataProcessor
+from prediction_model import PredictionModel
+from probability_evaluator import ProbabilityEvaluator
+from data_emitter import DataEmitter
 import pandas as pd
-
-from probability_evaluation import ProbabilityEvaluator
-from utilities.plots import *
-#from utilities.trajectory import *
-from utilities.probability import *
-from prediction_model import *
-
-#path = r'data_csv\chosen_trajectories\test.csv'
-path = r'data_csv\left_hand\left_9.csv'
-df = pd.read_csv(path)
-
-''' save pgs in csv later '''
-pg1 = np.array([[0.8368], [0.2357], [0.1415]])
-pg2 = np.array([[-0.8368], [0.2357], [0.3415]])
-pg3 = np.array([[-0.8368], [-0.2357], [-0.1415]])
-pg4 = np.array([[-1.8368], [-0.2357], [0.1415]])
-pg5 = np.array([[2.8368], [-0.2357], [0.1415]])
-
-goals = [pg1, pg2, pg3]
-probability_goals = []  # accumulated probability of each goal
-
-interval = 50
-max_iterations = len(df) // interval
-iterations = 10
-
-########################################################################################################
+import numpy as np
 
 
-''' initial values '''
-pp = np.array([[df['x'].iloc[0]], [df['y'].iloc[0]], [df['z'].iloc[0]]])  # position at t_n-2
-p = np.array([[df['x'].iloc[interval]], [df['y'].iloc[interval]], [df['z'].iloc[interval]]])  # position at t_n-1
-pn = np.array([[df['x'].iloc[2 * interval]], [df['y'].iloc[2 * interval]], [df['z'].iloc[interval]]])  # position at t_n
+class Main:
+    def __init__(self):
+        path = r'data/goals/goals.csv'
+        df = pd.read_csv(path)
+        coordinates = []
+        for index, row in df.iterrows():
+            coordinates.append(np.array([[row['x']], [row['y']], [row['z']]]))
 
-pp_t = df['time'].iloc[0]
-p_t = df['time'].iloc[10]
-pn_t = df['time'].iloc[20]
+        self.data_queue = queue.Queue()
+        #self.processor = DataProcessor()
+        self.prediction_model = PredictionModel(coordinates)
+        self.probability_evaluator = ProbabilityEvaluator(len(coordinates))
+        self.data_generator = DataEmitter(self.data_queue, 0)
 
-prediction_model = PredictionModel(goals)
-probability_evaluator = ProbabilityEvaluator(len(goals))
+    def process_data(self, data):
+        #processed_data = self.processor.process(data)
+        direction_vectors = self.prediction_model.calculate_predicted_angles(data[0], data[1])
+        self.probability_evaluator.evaluate_angles(self.prediction_model.dp_current, direction_vectors)
+        print(f"Zeitstempel: {data[1]}, Wert: {data[0]}, Wahrscheinlichkeit: {self.probability_evaluator.probability_goals}")
 
-for i in range(min(iterations, max_iterations - 1)):
+    def run(self):
+        producer_thread = threading.Thread(target=self.data_generator.emit_data)
+        producer_thread.start()
 
-    if i > 0:
-        pn = np.array([[df['x'].iloc[i + interval]], [df['y'].iloc[i + interval]], [df['z'].iloc[i + interval]]])
-        pn_t = df['time'].iloc[i + interval]
+        while True:
+            try:
+                data = self.data_queue.get(timeout=1)  # Timeout von 1 Sekunde
+                self.process_data(data)
+            except queue.Empty:
+                print("Warten auf Daten...")
+                time.sleep(1)
 
-    direction_vectors = prediction_model.calculate_predicted_angles(pn, pn_t)
-    probability_evaluator.evaluate_angles(prediction_model.dp_current, direction_vectors)
 
-    print(probability_evaluator.probability_goals)
-    print(probability_evaluator.sample_size_of_goals)
+
+if __name__ == "__main__":
+    main = Main()
+    main.run()
 

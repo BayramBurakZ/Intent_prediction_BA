@@ -97,3 +97,4 @@ def plot_normal_distribution(sigma, mu=0):
     plt.xlabel('x')
     #plt.ylabel('Probability Density')
     plt.show()
+

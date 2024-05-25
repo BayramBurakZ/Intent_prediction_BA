@@ -117,3 +117,5 @@ def prediction_model_matrices(p_previous, dp_previous, p_goal):
         Ma[i] = [6 * a3[i, 0], 2 * a2[i, 0]]
     '''
     return prediction_mat, deriv_prediction_mat
+
+
