@@ -38,8 +38,8 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
                    tangential_vectors[i][1],
                    color='purple', scale=10)
 
-    #plt.xlim(-1,1)
-    #plt.ylim(-0.5 , 0.5)
+    plt.xlim(0,1.5)
+    plt.ylim(-0.6 , 0.6)
 
     plt.title('model function')
     plt.xlabel('X')

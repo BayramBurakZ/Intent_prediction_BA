@@ -62,7 +62,7 @@ def calculate_standard_deviation(angles):
     min_sd = np.sqrt(1 / 8)
     max_sd = np.sqrt(1 / 16)
 
-    if (sigma < min_sd):
+    if sigma < min_sd:
         sigma = min_sd
 
     if (sigma > max_sd):

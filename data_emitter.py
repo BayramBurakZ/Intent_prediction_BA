@@ -1,30 +1,35 @@
 import time
-import queue
 import pandas as pd
 import numpy as np
+
+
 class DataEmitter:
-    def __init__(self, data_queue, start_time):
+    def __init__(self, data_queue):
         path = r'data/right_hand/right_9.csv'
         self.df = pd.read_csv(path)
         self.data_queue = data_queue
-        self.start_time = start_time
 
     def emit_data(self):
-        sampling_rate = 1
 
-        start_time = time.time()
-        current_time = start_time
+        timestamps = self.df['time'].values
+        time_step = 1 # TODO: change this if it takes too much resources
+        #current_time = timestamps[0]
+        current_time = 19480
+        current_index = 0
 
-        for index, row in self.df.iterrows():
+        while current_index < len(timestamps):
 
-            timestamp = row['time']
-            coordinates = np.array([[row['x']], [row['y']], [row['z']]])
+            # select next highest timestamp with simulated time
+            if current_time >= timestamps[current_index]:
+                # select data
+                row = self.df.iloc[current_index]
+                ts = row['time']
+                coordinates = np.array([[row['x']], [row['y']], [row['z']]])
 
-            while (time.time() - current_time) < sampling_rate:
-                time.sleep(0.01)
+                self.data_queue.put([ts, coordinates]) # save in queue
+                current_index += 1
 
-            #elapsed_time = (time.time() - start_time) * 1000  # in milliseconds
-            self.data_queue.put([coordinates,timestamp])
-            current_time = time.time()
+            current_time += time_step
 
-
+            # wait for "time_step" amount of milliseconds to simulate real time
+            time.sleep(time_step / 1000)
