@@ -10,17 +10,16 @@ import numpy as np
 
 class Main:
     def __init__(self):
-        path = r'data/goals/goals.csv'
+        path = r'data/goals/goal_test1.csv'
+        #path = r'data/goals/goals.csv'
         df = pd.read_csv(path)
-        coordinates = []
+        all_goal_positions = []
         for index, row in df.iterrows():
-            coordinates.append(np.array([[row['x']], [row['y']], [row['z']]]))
+            all_goal_positions.append(np.array([[row['x']], [row['y']], [row['z']]]))
 
-        self.processor = DataProcessor(coordinates)
+        self.processor = DataProcessor(all_goal_positions)
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue)
-
-
 
     def run(self):
         producer_thread = threading.Thread(target=self.data_emitter.emit_data)
@@ -35,9 +34,7 @@ class Main:
                 time.sleep(0.2)
 
 
-
 if __name__ == "__main__":
+
     main = Main()
     main.run()
-
-

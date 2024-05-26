@@ -1,7 +1,6 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.stats import norm
-import statistics
 
 
 def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
@@ -19,13 +18,12 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
     plt.scatter(p[0, 0], p[1, 0], label='t-1', color='red')
     plt.scatter(pn[0, 0], pn[1, 0], label='t', color='black')
 
-    i=0
+    i = 0
     for g in goals:
         lab = "Pg_" + str(i)
         plt.scatter(g[0, 0], g[1, 0], color='green')
         plt.text(g[0, 0] - 0.1, g[1, 0], f'{lab}')
         i += 1
-
 
     for point in path_points:
         plt.scatter(point[0, 0], point[1, 0], color='purple')
@@ -38,14 +36,14 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
                    tangential_vectors[i][1],
                    color='purple', scale=10)
 
-    plt.xlim(0,1.5)
-    plt.ylim(-0.6 , 0.6)
+    plt.xlim(0, 1.5)
+    plt.ylim(-0.6, 0.6)
 
     plt.title('model function')
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.grid(False)
-    plt.legend()#loc='lower left'
+    plt.legend()  # loc='lower left'
     plt.show()
 
 
@@ -77,7 +75,8 @@ def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
 
     for i in range(len(path_points)):
         ax.quiver(path_points[i][0], path_points[i][1], path_points[i][2], tangential_vectors[i][0],
-                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.1, normalize=True, arrow_length_ratio=0.2, color='blue')
+                  tangential_vectors[i][1], tangential_vectors[i][2], length=0.1, normalize=True,
+                  arrow_length_ratio=0.2, color='blue')
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -93,10 +92,7 @@ def plot_normal_distribution(sigma, mu=0):
     # Plot the pdf
     plt.figure()
     plt.plot(x, norm.pdf(x, mu, sigma))
-    #plt.title('Normal Distribution')
+    # plt.title('Normal Distribution')
     plt.xlabel('x')
-    #plt.ylabel('Probability Density')
+    # plt.ylabel('Probability Density')
     plt.show()
-
-
-
