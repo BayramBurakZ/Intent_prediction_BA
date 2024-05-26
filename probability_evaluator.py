@@ -6,20 +6,20 @@ class ProbabilityEvaluator:
     """ A class that evaluates the probability of each goal.
 
         Attributes:
-            sample_size_of_goals: (list)        amount of sample for accumulated probability
-            probability_goals: (list)           probability of each goal
-            probability_uncategorized: (float)  probability of no goal
+            goals_sample_quantity: (list)                amount of sample for accumulated probability
+            goals_probability: (list)           probability of each goal
     """
 
-    def __init__(self, number_of_goals):
+    def __init__(self, goals_probability, goals_sample_quantity, min_variance, max_variance):
         """ Initializes the probability evaluator.
 
-            :param number_of_goals: (int)   amount of goals
+            :param sample_sizes: (list)                amount of sample for accumulated probability
         """
-        self.number_of_goals = number_of_goals
-        self.sample_size_of_goals = [0] * number_of_goals
-        self.probability_goals = [0] * number_of_goals
-        self.probability_uncategorized = 0
+        self.goals_probability = goals_probability
+
+        self.goals_sample_quantity = goals_sample_quantity
+        self.min_variance = min_variance
+        self.max_variance = max_variance
 
     def evaluate_angles(self, dp_current, direction_vectors):
         """ Evaluates the angles between predicted and measured directional vector.
@@ -27,28 +27,29 @@ class ProbabilityEvaluator:
         :param dp_current: (NDArray[np.float64])                current directional vector
         :param direction_vectors: (List[NDArray[np.float64]])   predicted directional vectors
         """
+        goal_amount = len(direction_vectors)
         angles = []
         for dv in direction_vectors:
             angles.append(calculate_angle(dp_current, dv))
 
-        sd_of_angles = calculate_standard_deviation(angles)
+        sd_of_angles = calculate_standard_deviation(angles, self.min_variance, self.max_variance)
 
-        for i in range(self.number_of_goals):
+        for i in range(goal_amount):
             # probability of last measured angle
             probability_angle = calculate_probability_angle(angles[i], sd_of_angles)
             # accumulated probability over n samples
-            self.probability_goals[i] = calculate_probability_goal(self.probability_goals[i], probability_angle)
+            self.goals_probability[i] = calculate_probability_goal(self.goals_probability[i], probability_angle)
 
             # update the sample size
-            if self.probability_goals[i] == 0:
-                self.sample_size_of_goals[i] = 0  # reset sample size along with goal probability
+            if np.isclose(self.goals_probability[i], 0, 0.001):
+                self.goals_sample_quantity[i] = 0  # reset sample size along with goal probability
             else:
-                self.sample_size_of_goals[i] += 1
+                self.goals_sample_quantity[i] += 1
 
         # normalize probability of goals
-        norm_divisor = probability_normalization_divisor(self.probability_goals)
-        self.probability_goals = [x / norm_divisor for x in self.probability_goals]
-        self.probability_uncategorized = probability_uncategorized_goal(self.probability_goals)
+        norm_divisor = probability_normalization_divisor(self.goals_probability)
+        for i in range(goal_amount):
+            self.goals_probability[i] /= norm_divisor
 
 
 def calculate_angle(v1, v2):
@@ -78,17 +79,17 @@ def calculate_angle(v1, v2):
     return np.arccos(cos_angle)  # in radiance
 
 
-def calculate_standard_deviation(angles):
+def calculate_standard_deviation(angles, min_variance, max_variance):
     """ Calculates the standard deviation of angles.
 
-    :param angles: (list)   angles as samples
+    :param angles: (list)   angles of predicted direction vector
     :return: (float)        standard deviation
     """
     sigma = np.std(angles)
 
     # boundaries for standard deviation
-    min_sd = np.sqrt(1 / 8)
-    max_sd = np.sqrt(1 / 16)
+    min_sd = np.sqrt(min_variance)
+    max_sd = np.sqrt(max_variance)
 
     if sigma < min_sd:
         sigma = min_sd

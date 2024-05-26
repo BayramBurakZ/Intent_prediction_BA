@@ -10,14 +10,20 @@ import numpy as np
 
 class Main:
     def __init__(self):
-        #path = r'data/goals/goal_test1.csv'
+        # all goal positions and ids are saved in csv->(ID, x, y, z)
         path = r'data/goals/goals.csv'
         df = pd.read_csv(path)
-        all_goal_positions = []
-        for index, row in df.iterrows():
-            all_goal_positions.append(np.array([[row['x']], [row['y']], [row['z']]]))
 
-        self.processor = Controller(all_goal_positions)
+        # threshold to (de)activate goals
+        goal_threshold = 0.3
+
+        # minimum distance between samples to start calculating
+        sample_min_distance = 0.03
+
+        # boundaries for normal distribution
+        min_variance, max_variance = 0.0625, 0.125
+
+        self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance)
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue)
 
@@ -28,7 +34,7 @@ class Main:
         while True:
             try:
                 data = self.data_queue.get()
-                self.processor.process_data(data)
+                self.controller.process_data(data)
             except queue.Empty:
                 print("wait for data...")
                 time.sleep(0.2)

@@ -19,6 +19,9 @@ class DataEmitter:
         current_time = 19480
         current_index = 0
 
+        current_index = (self.df['time'] >= current_time).idxmax()
+
+
         while current_index < len(timestamps):
 
             # select next highest timestamp with simulated time
