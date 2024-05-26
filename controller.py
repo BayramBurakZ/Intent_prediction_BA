@@ -1,11 +1,12 @@
 import numpy as np
+import logging
 
 from prediction_model import PredictionModel
 from probability_evaluator import ProbabilityEvaluator
 
 
-class DataProcessor:
-    """ A class that processes the incoming data.
+class Controller:
+    """ A class that controls the flow of data.
 
     Attributes:
         sample_distance: (float)                        minimum distance between samples to calculate prediction
@@ -14,7 +15,7 @@ class DataProcessor:
 
     """
 
-    def __init__(self, all_goal_positions, sample_distance=0.15):
+    def __init__(self, all_goal_positions, sample_distance=0.01):
         """ Initializes the DataProcessor object.
 
         :param all_goal_positions: (List[NDArray[np.float64]])  coordinates of all goals
@@ -23,6 +24,8 @@ class DataProcessor:
         assert len(all_goal_positions) > 0, "the list of goal can not be empty"
         assert all(goal.shape == (3, 1) for goal in all_goal_positions), "goal vectors must have the shape (3,1) "
 
+        logging.basicConfig(filename=r'./data/logs/reached_goals.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s')
         self.sample_distance = sample_distance
         self.prediction_model = PredictionModel(all_goal_positions)
         self.probability_evaluator = ProbabilityEvaluator(len(all_goal_positions))
@@ -32,7 +35,10 @@ class DataProcessor:
 
         :param data: (List[int, NDArray[np.float64]])  data to be processed
         """
+
+
         if is_bad_data(data):
+            print("skipped bad data")
             return
 
         t_current = data[0]
@@ -46,7 +52,12 @@ class DataProcessor:
         direction_vectors = self.prediction_model.calculate_predicted_direction(p_current, t_current)
         self.probability_evaluator.evaluate_angles(self.prediction_model.dp_current, direction_vectors)
         print(
-            f"p: {data[0]}, Timestamp: {data[1]}, probability: {self.probability_evaluator.probability_goals, self.probability_evaluator.probability_uncategorized}")
+            f"Timestamp: {data[0]}, probability: {tr(self.probability_evaluator.probability_goals), round(self.probability_evaluator.probability_uncategorized * 100, 2)}")
+        reached_goal(p_current, self.prediction_model.goal_positions, t_current)
+
+
+def tr(g):
+    return [round(x * 100, 2) for x in g]
 
 
 def euclidean_distance(column_vector1, column_vector2):
@@ -65,3 +76,10 @@ def is_bad_data(data):
         return True"""
 
     return False
+
+
+def reached_goal(p_current, goals, timestamp):
+    for i in range(len(goals)):
+        if euclidean_distance(p_current, goals[i]) < 0.1:
+            logging.info(f"Timestamp: {timestamp} goal: {i}" )
+            print(f"Timestamp: {timestamp}", "goal:", i)

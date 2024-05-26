@@ -10,12 +10,12 @@ class PredictionModel:
          dp_previous, dp_current: (NDArray[np.float64]) directional vector at each point
      """
 
-    def __init__(self, all_goal_positions):
+    def __init__(self, goal_positions):
         """ Constructs all necessary attributes for the prediction model.
 
-        :param all_goal_positions: (List[NDArray[np.float64]])  coordinates of all goal positions
+        :param goal_positions: (List[NDArray[np.float64]])  coordinates of all goal positions
         """
-        self.all_goal_positions = all_goal_positions
+        self.goal_positions = goal_positions
 
         # initialize with general position of wrist
         self.p_previous = np.array([[1], [0], [0]])
@@ -48,7 +48,7 @@ class PredictionModel:
         prediction_mat = []
         deriv_prediction_mat = []
 
-        for goal in self.all_goal_positions:
+        for goal in self.goal_positions:
             m = prediction_model_matrices(self.p_previous, self.dp_previous, goal)
             prediction_mat.append(m[0])
             deriv_prediction_mat.append(m[1])
@@ -57,17 +57,17 @@ class PredictionModel:
         predicted_path_points = []
         deriv_at_path_points = []
 
-        for i in range(len(self.all_goal_positions)):
-            s = calculate_path_coordinate(self.p_previous, self.p_current, self.all_goal_positions[i])
+        for i in range(len(self.goal_positions)):
+            s = calculate_path_coordinate(self.p_previous, self.p_current, self.goal_positions[i])
             predicted_path_points.append(calculate_polynomial(prediction_mat[i], s))
             deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mat[i], s)))
 
         # Plotting Model (Optional)
         '''
         plot_3d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, self.all_goal_positions,
-                      predicted_path_points, deriv_at_path_points)'''
-        plot_2d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, self.all_goal_positions,
                       predicted_path_points, deriv_at_path_points)
+        plot_2d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, self.all_goal_positions,
+                      predicted_path_points, deriv_at_path_points)'''
 
         return deriv_at_path_points
 

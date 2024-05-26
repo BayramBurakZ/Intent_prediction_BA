@@ -13,10 +13,10 @@ z_list = [1.0]*100"""
 
 df = pd.DataFrame()
 
-df['ID'] = [1,0]
-df['x'] = [0.2,0.2]
-df['y'] = [0.4,-0.4]
-df['z'] = [1.0,1.0]
+df['ID'] = [1,2,3,4]
+df['x'] = [0.6,0.5,0.5,0.6]
+df['y'] = [-0.4, -0.2,0.2, 0.4]
+df['z'] = [1.0,1.0,1.0,1.0]
 
 path = r'../data/goals/goal_test1.csv '
 df.to_csv(path, index=False)

@@ -7,8 +7,8 @@ import pandas as pd
 class DataEmitter:
     # TODO: consider calculations for both hand to run in parallel
     def __init__(self, data_queue):
-        path = r'data/test_trajectories/test1.csv'
-        #path = r'data/right_hand/right_9.csv'
+        #path = r'data/test_trajectories/test1.csv'
+        path = r'data/right_hand/right_9.csv'
         self.df = pd.read_csv(path)
         self.data_queue = data_queue
 

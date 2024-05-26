@@ -1,4 +1,4 @@
-from process_data import DataProcessor
+from controller import Controller
 from data_emitter import DataEmitter
 
 import time
@@ -10,14 +10,14 @@ import numpy as np
 
 class Main:
     def __init__(self):
-        path = r'data/goals/goal_test1.csv'
-        #path = r'data/goals/goals.csv'
+        #path = r'data/goals/goal_test1.csv'
+        path = r'data/goals/goals.csv'
         df = pd.read_csv(path)
         all_goal_positions = []
         for index, row in df.iterrows():
             all_goal_positions.append(np.array([[row['x']], [row['y']], [row['z']]]))
 
-        self.processor = DataProcessor(all_goal_positions)
+        self.processor = Controller(all_goal_positions)
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue)
 

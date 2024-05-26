@@ -68,7 +68,7 @@ def calculate_angle(v1, v2):
     v1_norm = np.linalg.norm(v1)
     v2_norm = np.linalg.norm(v2)
 
-    if not np.isclose(v1_norm, 1, 0.0001) or not np.isclose(v2_norm, 1, 0.0001):
+    if np.isclose(v1_norm, 0, 0.001) or np.isclose(v2_norm, 0, 0.001):
         return np.pi
 
     # calculate angle
@@ -148,4 +148,4 @@ def probability_uncategorized_goal(normalized_probability_all_goals):
     :param normalized_probability_all_goals: (List[float])  normalized probability of each goal
     :return: (float) probability of uncategorized goal
     """
-    return min(0, 1 - sum(normalized_probability_all_goals))
+    return 1 - min(1, sum(normalized_probability_all_goals))
