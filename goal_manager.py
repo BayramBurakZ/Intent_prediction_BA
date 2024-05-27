@@ -10,7 +10,7 @@ class GoalManager:
         self.goal_threshold = goal_threshold
 
 
-    def update_goals(self, p_current, t_current, action_db=None):
+    def update_goals(self, p_current, t_current, action_db=None, plot_data = None):
         if action_db is not None:
             action_from = action_db['hand']
             action_tuple = (parse_action_string_to_tuples(action_db['action_id']))[0]

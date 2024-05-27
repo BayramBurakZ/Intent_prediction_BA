@@ -69,11 +69,11 @@ class PredictionModel:
             deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mat[i], s)))
 
         # Plotting Model (Optional)
-        '''
-        plot_3d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, self.all_goal_positions,
+        """
+        plot_3d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, goal_positions,
                       predicted_path_points, deriv_at_path_points)
         plot_2d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, goal_positions,
-                      predicted_path_points, deriv_at_path_points)'''
+                      predicted_path_points, deriv_at_path_points)"""
 
         return deriv_at_path_points
 

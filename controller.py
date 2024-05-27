@@ -19,13 +19,13 @@ class Controller:
         :param all_goal_positions: (List[NDArray[np.float64]])  coordinates of all goals
         :param sample_min_distance: (float)     minimum distance between samples to calculate prediction
         """
+
         self.active_goal_positions = df_process_goal_positions(df)
         self.goals_probability = [0] * len(self.active_goal_positions)
         self.goals_sample_quantity = [0] * len(self.active_goal_positions)
 
         self.goal_manager = GoalManager(df, self.active_goal_positions, self.goals_probability,
                                         self.goals_sample_quantity, goal_threshold)
-
 
         self.goal_manager.deactivate_goal(3)
         self.goal_manager.deactivate_goal(4)
@@ -45,27 +45,17 @@ class Controller:
         self.goal_manager.deactivate_goal(33)
         self.goal_manager.deactivate_goal(34)
 
-
-
         self.prediction_model = PredictionModel(sample_min_distance)
         self.probability_evaluator = ProbabilityEvaluator(self.goals_probability, self.goals_sample_quantity,
                                                           min_variance, max_variance)
-
-
-
-
-
-
 
     def process_data(self, data):
         """ Processes the incoming data.
 
         :param data: (List[int, NDArray[np.float64]])  data to be processed
         """
-        """
-        if is_bad_data(data):
-            print("skipped bad data")
-            return"""
+        # TODO: catch bad data
+
         t_current = data[0]
         p_current = data[1]
 
@@ -74,48 +64,22 @@ class Controller:
         if direction_vectors is not None:
             self.probability_evaluator.evaluate_angles(self.prediction_model.dp_current, direction_vectors)
 
-            if len(data) > 2:
-                actions = data[2]
-                self.goal_manager.update_goals(p_current, t_current, actions)
-                print(f"time: {data[0]},  {tra(self.goals_probability)}")
-            else:
-                self.goal_manager.update_goals(p_current, t_current)
-                print(f"time: {data[0]},  {tra(self.goals_probability)}")
+        if len(data) > 2:
+            self.goal_manager.update_goals(p_current, t_current, data[2])
+        else:
+            self.goal_manager.update_goals(p_current, t_current)
 
-            """
-            try:
-                # Check for termination condition
-                user_input = input("Do you want to exit the program? (y/n): ")
-                if user_input.lower() == "y":
-                    sys.exit()
+    def is_bad_data(data):
+        """ checks for bad data """
+        if data[0] < 0 or not isinstance(data[0], int):
+            return True
 
-                # Continue with other operations
+        # TODO: catch bad coordinates earlier!
+        """
+        if all(not isinstance(item, float) for item in data[1].flatten().tolist()):
+            return True"""
 
-            except Exception as e:
-                print(f"An error occurred: {e}")
-                sys.exit()"""
-
-        elif len(data) > 2:
-            actions = data[2]
-            self.goal_manager.update_goals(p_current, t_current, actions)
-
-
-
-def tra(g):
-    return [round(x * 100, 2) for x in g]
-
-
-def is_bad_data(data):
-    """ checks for bad data """
-    if data[0] < 0 or not isinstance(data[0], int):
-        return True
-
-    # TODO: catch bad coordinates earlier!
-    """
-    if all(not isinstance(item, float) for item in data[1].flatten().tolist()):
-        return True"""
-
-    return False
+        return False
 
 
 def df_process_goal_positions(df):
@@ -124,6 +88,5 @@ def df_process_goal_positions(df):
         goal_positions.append([row['x'], row['y'], row['z']])
 
     assert len(goal_positions) > 0, "the list of goal can not be empty"
-    # assert all(goal.shape == (3, 1) for goal in goal_positions), "goal vectors must have the shape (3,1) "
 
     return goal_positions
