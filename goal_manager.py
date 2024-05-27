@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class GoalManager:
     def __init__(self, df, active_goal_positions, goals_probability, goals_sample_quantity, goal_threshold):
         self.df = initialize_df(df)
@@ -8,25 +9,30 @@ class GoalManager:
         self.goals_sample_quantity = goals_sample_quantity
         self.goal_threshold = goal_threshold
 
-    def update_goals(self, p_current, t_current, actions = None):
-        if actions is not None:
-            print(actions)
+
+    def update_goals(self, p_current, t_current, action_db=None):
+        if action_db is not None:
+            action_from = action_db['hand']
+            action_tuple = (parse_action_string_to_tuples(action_db['action_id']))[0]
+            print("received: ", action_tuple, "from: ", action_from)
+            self.handle_action(action_tuple)
+
+            # other_actions_tuple = parse_action_string_to_tuples(action_db['other_actions'])
 
         return  # print(tr(self.goals_probability))
 
     def activation_radius(self, p_current):
-        #TODO: change this with blind spot function
+        # TODO: change this with blind spot function
         for index, row in self.df.iterrows():
             coordinates = np.array([row['x'], row['y'], row['z']])
             goal_id = row['ID']
 
             print(distance(coordinates, p_current))
-            if row['active'] and distance(coordinates, p_current) >  self.goal_threshold:
+            if row['active'] and distance(coordinates, p_current) > self.goal_threshold:
                 self.deactivate_goal(goal_id)
 
-            if not row['active'] and distance(coordinates, p_current) <  self.goal_threshold:
+            if not row['active'] and distance(coordinates, p_current) < self.goal_threshold:
                 self.activate_goal(goal_id)
-
 
     def uncategorized_goal_probability(self):
         return max(1, 1 - self.df['probability'].sum())
@@ -79,6 +85,12 @@ class GoalManager:
         coordinates = self.df.loc[self.df['ID'] == goal_id, ['x', 'y', 'z']].values.tolist()
         return coordinates[0]
 
+    def handle_action(self, action):
+        if action[0] == 'pick':
+            self.deactivate_goal(action[1])
+
+
+
 
 def tr(g):
     return [round(x * 100, 2) for x in g]
@@ -90,6 +102,29 @@ def initialize_df(df):
     df['probability'] = 0
     return df
 
+
 def distance(v1, v2):
     """ Calculates the Euclidean distance between two vectors. """
     return np.linalg.norm(v1 - v2)
+
+
+def parse_action_string_to_tuples(action_string):
+    # Split the input string by comma to get individual components
+    components = action_string.split(',')
+
+    result = []
+
+    for component in components:
+        # Split each component by underscore
+        parts = component.split('_')
+        if len(parts) >= 2:
+            # The first part is the action, the second part is the goal number
+            word = parts[0]
+            try:
+                number = int(parts[1])
+                result.append((word, number))
+            except ValueError:
+                print("corrupted database (other_)action")
+                continue
+
+    return result

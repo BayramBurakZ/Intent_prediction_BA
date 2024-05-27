@@ -1,3 +1,4 @@
+import sys
 import time
 
 import numpy as np
@@ -29,15 +30,19 @@ class DataEmitter:
     def emit_data(self):
         timestamps_csv = self.df_csv['time'].values
         timestamps_db = self.df_db['time'].values
+        timestamps_db = [int(element) for element in timestamps_db]
         time_step = 1  # TODO: change this if it takes too much resources
 
-        #current_time = timestamps_csv[0]
+
+        # current_time = timestamps_csv[0]
         current_time = 19480
-        #current_index = 0
+        # current_index = 0
         db_index = 0
         current_index = (self.df_csv['time'] >= current_time).idxmax()
 
         while current_index < len(timestamps_csv):
+            if db_index >= 32:
+                sys.exit()
 
             data = []
 
@@ -51,16 +56,15 @@ class DataEmitter:
                 data.append(ts)
                 data.append(coordinates)
                 current_index += 1
-
                 if current_time >= timestamps_db[0]:
+                    timestamps_db.pop(0)
                     row = self.df_db.iloc[db_index]
                     db_index += 1
                     data.append(row)
-
 
                 self.data_queue.put(data)  # save in queue
 
             current_time += time_step
 
             # wait for "time_step" amount of milliseconds to simulate real time
-            time.sleep(time_step / 1000)
+            #time.sleep(time_step / 1000)

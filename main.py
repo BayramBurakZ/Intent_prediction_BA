@@ -18,7 +18,7 @@ class Main:
         goal_threshold = 1.1
 
         # minimum distance between samples to start calculating
-        sample_min_distance = 0.05
+        sample_min_distance = 0.03
 
         # boundaries for normal distribution
         min_variance, max_variance = 0.0625, 0.125

@@ -1,5 +1,3 @@
-import sys
-
 from goal_manager import *
 from prediction_model import PredictionModel
 from probability_evaluator import ProbabilityEvaluator
@@ -25,11 +23,37 @@ class Controller:
         self.goals_probability = [0] * len(self.active_goal_positions)
         self.goals_sample_quantity = [0] * len(self.active_goal_positions)
 
+        self.goal_manager = GoalManager(df, self.active_goal_positions, self.goals_probability,
+                                        self.goals_sample_quantity, goal_threshold)
+
+
+        self.goal_manager.deactivate_goal(3)
+        self.goal_manager.deactivate_goal(4)
+        self.goal_manager.deactivate_goal(5)
+        self.goal_manager.deactivate_goal(6)
+        self.goal_manager.deactivate_goal(8)
+        self.goal_manager.deactivate_goal(10)
+        self.goal_manager.deactivate_goal(13)
+        self.goal_manager.deactivate_goal(15)
+        self.goal_manager.deactivate_goal(23)
+        self.goal_manager.deactivate_goal(24)
+        self.goal_manager.deactivate_goal(25)
+        self.goal_manager.deactivate_goal(28)
+        self.goal_manager.deactivate_goal(29)
+        # always off
+        self.goal_manager.deactivate_goal(32)
+        self.goal_manager.deactivate_goal(33)
+        self.goal_manager.deactivate_goal(34)
+
+
+
         self.prediction_model = PredictionModel(sample_min_distance)
         self.probability_evaluator = ProbabilityEvaluator(self.goals_probability, self.goals_sample_quantity,
                                                           min_variance, max_variance)
-        self.goal_manager = GoalManager(df, self.active_goal_positions, self.goals_probability,
-                                        self.goals_sample_quantity, goal_threshold)
+
+
+
+
 
 
 
@@ -38,11 +62,10 @@ class Controller:
 
         :param data: (List[int, NDArray[np.float64]])  data to be processed
         """
-
+        """
         if is_bad_data(data):
             print("skipped bad data")
-            return
-
+            return"""
         t_current = data[0]
         p_current = data[1]
 
@@ -59,7 +82,6 @@ class Controller:
                 self.goal_manager.update_goals(p_current, t_current)
                 print(f"time: {data[0]},  {tra(self.goals_probability)}")
 
-
             """
             try:
                 # Check for termination condition
@@ -72,6 +94,11 @@ class Controller:
             except Exception as e:
                 print(f"An error occurred: {e}")
                 sys.exit()"""
+
+        elif len(data) > 2:
+            actions = data[2]
+            self.goal_manager.update_goals(p_current, t_current, actions)
+
 
 
 def tra(g):
