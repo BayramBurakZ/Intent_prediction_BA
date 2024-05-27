@@ -14,11 +14,11 @@ class PredictionModel:
         """ Constructs all necessary attributes for the prediction model. """
 
         # initialize with general position of wrist
-        self.p_previous = None  # np.array([1.0, 0.0, 0.0])
-        self.p_current = None  # np.array([1.0, 0.0, 0.0])
+        self.p_previous = None
+        self.p_current = None
 
-        self.dp_previous = None  # np.array([1.0, 0.0, 0.0])
-        self.dp_current = None  # np.array([1.0, 0.0, 0.0])
+        self.dp_previous = None
+        self.dp_current = None
 
         self.sample_min_distance = sample_min_distance
 
@@ -71,9 +71,9 @@ class PredictionModel:
         # Plotting Model (Optional)
         '''
         plot_3d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, self.all_goal_positions,
-                      predicted_path_points, deriv_at_path_points)'''
-        plot_2d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, goal_positions,
                       predicted_path_points, deriv_at_path_points)
+        plot_2d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, goal_positions,
+                      predicted_path_points, deriv_at_path_points)'''
 
         return deriv_at_path_points
 

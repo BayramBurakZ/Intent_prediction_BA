@@ -1,4 +1,4 @@
-import numpy as np
+import sys
 
 from goal_manager import *
 from prediction_model import PredictionModel
@@ -31,6 +31,8 @@ class Controller:
         self.goal_manager = GoalManager(df, self.active_goal_positions, self.goals_probability,
                                         self.goals_sample_quantity, goal_threshold)
 
+
+
     def process_data(self, data):
         """ Processes the incoming data.
 
@@ -48,10 +50,28 @@ class Controller:
 
         if direction_vectors is not None:
             self.probability_evaluator.evaluate_angles(self.prediction_model.dp_current, direction_vectors)
-            self.goal_manager.update_goals()
-            print(f"time: {data[0]},  {tra(self.goals_probability)}")
 
-        # self.goal_manager.deactivate_goal(7)
+            if len(data) > 2:
+                actions = data[2]
+                self.goal_manager.update_goals(p_current, t_current, actions)
+                print(f"time: {data[0]},  {tra(self.goals_probability)}")
+            else:
+                self.goal_manager.update_goals(p_current, t_current)
+                print(f"time: {data[0]},  {tra(self.goals_probability)}")
+
+
+            """
+            try:
+                # Check for termination condition
+                user_input = input("Do you want to exit the program? (y/n): ")
+                if user_input.lower() == "y":
+                    sys.exit()
+
+                # Continue with other operations
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                sys.exit()"""
 
 
 def tra(g):

@@ -11,11 +11,11 @@ import numpy as np
 class Main:
     def __init__(self):
         # all goal positions and ids are saved in csv->(ID, x, y, z)
-        path = r'data/goals/goal_test1.csv'
+        path = r'data/goals/goals.csv'
         df = pd.read_csv(path)
 
         # threshold to (de)activate goals
-        goal_threshold = 0.3
+        goal_threshold = 1.1
 
         # minimum distance between samples to start calculating
         sample_min_distance = 0.05
