@@ -16,8 +16,8 @@ class ProbabilityEvaluator:
             :param sample_sizes: (list)                amount of sample for accumulated probability
         """
         self.goals_probability = goals_probability
-
         self.goals_sample_quantity = goals_sample_quantity
+
         self.min_variance = min_variance
         self.max_variance = max_variance
 
@@ -35,10 +35,10 @@ class ProbabilityEvaluator:
         sd_of_angles = calculate_standard_deviation(angles, self.min_variance, self.max_variance)
 
         for i in range(goal_amount):
-            # probability of last measured angle
-            probability_angle = calculate_probability_angle(angles[i], sd_of_angles)
+            # probability an angle
+            angle_probability = stats.norm.pdf(angles[i], 0, sd_of_angles)
             # accumulated probability over n samples
-            self.goals_probability[i] = calculate_probability_goal(self.goals_probability[i], probability_angle)
+            self.goals_probability[i] = calculate_probability_goal(self.goals_probability[i], angle_probability)
 
             # update the sample size
             if np.isclose(self.goals_probability[i], 0, 0.001):
@@ -47,23 +47,20 @@ class ProbabilityEvaluator:
                 self.goals_sample_quantity[i] += 1
 
         # normalize probability of goals
-        norm_divisor = probability_normalization_divisor(self.goals_probability)
+        norm_divisor = max(1, sum(self.goals_probability))
         for i in range(goal_amount):
             self.goals_probability[i] /= norm_divisor
 
 
 def calculate_angle(v1, v2):
     """ Calculates the angle on x,y plane between two vectors. """
-    if v1.shape[0] != 2:
+    if v1.shape != 2:
         # remove z
         v1 = v1[:2]
 
-    if v2.shape[0] != 2:
+    if v2.shape != 2:
         # remove z
         v2 = v2[:2]
-
-    v1 = np.squeeze(v1)
-    v2 = np.squeeze(v2)
 
     # normalize
     v1_norm = np.linalg.norm(v1)
@@ -100,18 +97,6 @@ def calculate_standard_deviation(angles, min_variance, max_variance):
     return sigma
 
 
-def calculate_probability_angle(angle, sigma, mu=0):
-    """ Calculates the probability of an angle using the PDF function on a normal distribution.
-
-    :param angle: (float)   angle to be evaluated
-    :param sigma: (float)   standard deviation
-    :param mu: (float)      mean
-
-    :return: (float)    probability of the angle
-    """
-    return stats.norm.pdf(angle, mu, sigma)
-
-
 def calculate_probability_goal(cumulative_probability, angle_probability):
     """ Calculates the cumulative probability of a goal.
 
@@ -120,7 +105,6 @@ def calculate_probability_goal(cumulative_probability, angle_probability):
 
     :return: (float)                        cumulative probability over samples
     """
-    # TODO: bug where some probabilities are nan. consider max boundary as well
     # lower boundary
     min_probability = 0.01
 
@@ -132,21 +116,3 @@ def calculate_probability_goal(cumulative_probability, angle_probability):
         return angle_probability  # first probability ( sample n = 1 )
     else:
         return cumulative_probability * angle_probability  # update probability ( sample n = n+1 )
-
-
-def probability_normalization_divisor(probability_all_goals):
-    """ Calculates the normalization divisor for all goals.
-
-    :param probability_all_goals: (list)   probability of each goal
-    :return: (float) normalization divisor
-    """
-    return max(1, sum(probability_all_goals))
-
-
-def probability_uncategorized_goal(normalized_probability_all_goals):
-    """ Calculates the probability of an uncategorized goal.
-
-    :param normalized_probability_all_goals: (List[float])  normalized probability of each goal
-    :return: (float) probability of uncategorized goal
-    """
-    return 1 - min(1, sum(normalized_probability_all_goals))

@@ -11,14 +11,14 @@ import numpy as np
 class Main:
     def __init__(self):
         # all goal positions and ids are saved in csv->(ID, x, y, z)
-        path = r'data/goals/goals.csv'
+        path = r'data/goals/goal_test1.csv'
         df = pd.read_csv(path)
 
         # threshold to (de)activate goals
         goal_threshold = 0.3
 
         # minimum distance between samples to start calculating
-        sample_min_distance = 0.03
+        sample_min_distance = 0.05
 
         # boundaries for normal distribution
         min_variance, max_variance = 0.0625, 0.125

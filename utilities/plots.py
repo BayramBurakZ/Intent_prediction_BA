@@ -15,21 +15,21 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
         plt.plot(x, y)
 
     # plot all points
-    plt.scatter(p[0, 0], p[1, 0], label='t-1', color='red')
-    plt.scatter(pn[0, 0], pn[1, 0], label='t', color='black')
+    plt.scatter(p[0], p[1], label='t-1', color='red')
+    plt.scatter(pn[0], pn[1], label='t', color='black')
 
     i = 0
     for g in goals:
         lab = "Pg_" + str(i)
-        plt.scatter(g[0, 0], g[1, 0], color='green')
-        plt.text(g[0, 0] - 0.1, g[1, 0], f'{lab}')
+        plt.scatter(g[0], g[1], color='green')
+        plt.text(g[0] - 0.1, g[1], f'{lab}')
         i += 1
 
     for point in path_points:
-        plt.scatter(point[0, 0], point[1, 0], color='purple')
+        plt.scatter(point[0], point[1], color='purple')
 
     # plot tangent vectors
-    plt.quiver(pn[0][0], pn[1][0], pn_prime[0][0], pn_prime[1][0], scale=10, color='black', label='p\'')
+    plt.quiver(pn[0], pn[1], pn_prime[0], pn_prime[1], scale=10, color='black', label='p\'')
 
     for i in range(len(path_points)):
         plt.quiver(path_points[i][0], path_points[i][1], tangential_vectors[i][0],
