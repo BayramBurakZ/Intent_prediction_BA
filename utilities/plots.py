@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import norm
 
-
+# delete this class if real time works
 def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
     # Parameter
     t = np.linspace(0, 1, 100)

@@ -18,7 +18,7 @@ class Main:
         goal_threshold = 1.1
 
         # minimum distance between samples to start calculating
-        sample_min_distance = 0.01
+        sample_min_distance = 0.10
 
         # boundaries for normal distribution
         min_variance, max_variance = 0.0625, 0.125
@@ -28,7 +28,9 @@ class Main:
         self.data_emitter = DataEmitter(self.data_queue)
 
     def run(self):
+
         producer_thread = threading.Thread(target=self.data_emitter.emit_data)
+        producer_thread.daemon = True # so we can close thread with sys.exit
         producer_thread.start()
 
         while True:

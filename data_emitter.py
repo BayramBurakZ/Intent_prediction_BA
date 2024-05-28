@@ -31,7 +31,7 @@ class DataEmitter:
         timestamps_csv = self.df_csv['time'].values
         timestamps_db = self.df_db['time'].values
         timestamps_db = [int(element) for element in timestamps_db]
-        time_step = 1  # TODO: change this if it takes too much resources
+        time_step = 10  # TODO: change this if it takes too much resources
 
 
         # current_time = timestamps_csv[0]
@@ -67,4 +67,4 @@ class DataEmitter:
             current_time += time_step
 
             # wait for "time_step" amount of milliseconds to simulate real time
-            #time.sleep(time_step / 1000)
+            time.sleep(time_step / 1000)

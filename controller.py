@@ -1,6 +1,7 @@
 from goal_manager import *
 from prediction_model import PredictionModel
 from probability_evaluator import ProbabilityEvaluator
+from real_time_plotter import AnimatedPlots
 
 
 class Controller:
@@ -24,6 +25,7 @@ class Controller:
         self.goals_probability = [0] * len(self.active_goal_positions)
         self.goals_sample_quantity = [0] * len(self.active_goal_positions)
 
+        self.animated_plots = AnimatedPlots(self.active_goal_positions)
         self.goal_manager = GoalManager(df, self.active_goal_positions, self.goals_probability,
                                         self.goals_sample_quantity, goal_threshold)
 
@@ -45,9 +47,10 @@ class Controller:
         self.goal_manager.deactivate_goal(33)
         self.goal_manager.deactivate_goal(34)
 
-        self.prediction_model = PredictionModel(sample_min_distance)
+        self.prediction_model = PredictionModel(sample_min_distance, self.animated_plots)
         self.probability_evaluator = ProbabilityEvaluator(self.goals_probability, self.goals_sample_quantity,
                                                           min_variance, max_variance)
+        self.animated_plots.animate()
 
     def process_data(self, data):
         """ Processes the incoming data.
@@ -62,6 +65,7 @@ class Controller:
         direction_vectors = self.prediction_model.calculate_predicted_direction(p_current, self.active_goal_positions)
 
         if direction_vectors is not None:
+
             self.probability_evaluator.evaluate_angles(self.prediction_model.dp_current, direction_vectors)
 
         if len(data) > 2:

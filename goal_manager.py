@@ -9,17 +9,14 @@ class GoalManager:
         self.goals_sample_quantity = goals_sample_quantity
         self.goal_threshold = goal_threshold
 
-
-    def update_goals(self, p_current, t_current, action_db=None, plot_data = None):
+    def update_goals(self, p_current, t_current, action_db=None, plot_data=None):
         if action_db is not None:
             action_from = action_db['hand']
             action_tuple = (parse_action_string_to_tuples(action_db['action_id']))[0]
             print("received: ", action_tuple, "from: ", action_from)
             self.handle_action(action_tuple)
-
+            # TODO clean up Database!
             # other_actions_tuple = parse_action_string_to_tuples(action_db['other_actions'])
-
-        return  # print(tr(self.goals_probability))
 
     def activation_radius(self, p_current):
         # TODO: change this with blind spot function
@@ -88,8 +85,6 @@ class GoalManager:
     def handle_action(self, action):
         if action[0] == 'pick':
             self.deactivate_goal(action[1])
-
-
 
 
 def tr(g):

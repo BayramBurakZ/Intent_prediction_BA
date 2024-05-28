@@ -10,7 +10,7 @@ class PredictionModel:
          dp_previous, dp_current: (NDArray[np.float64]) directional vector at each point
      """
 
-    def __init__(self, sample_min_distance):
+    def __init__(self, sample_min_distance, animated_plots):
         """ Constructs all necessary attributes for the prediction model. """
 
         # initialize with general position of wrist
@@ -21,6 +21,8 @@ class PredictionModel:
         self.dp_current = None
 
         self.sample_min_distance = sample_min_distance
+        self.animated_plots = animated_plots
+
 
     def calculate_predicted_direction(self, p_next, goal_positions):
         """ Calculates the predicted directions for each goal by modeling a cubic polynomial curve in 3D space.
@@ -51,7 +53,7 @@ class PredictionModel:
         self.dp_current = position_derivative(self.p_previous, self.p_current)
 
         # save predicted trajectories and it's derivatives for each goal
-        prediction_mat = []
+        prediction_mat = []  # TODO naming! more then one mat
         deriv_prediction_mat = []
 
         for goal in goal_positions:
@@ -69,11 +71,10 @@ class PredictionModel:
             deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mat[i], s)))
 
         # Plotting Model (Optional)
-        """
-        plot_3d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, goal_positions,
-                      predicted_path_points, deriv_at_path_points)
-        plot_2d_curve(prediction_mat, self.p_previous, self.p_current, self.dp_current, goal_positions,
-                      predicted_path_points, deriv_at_path_points)"""
+        self.animated_plots.update_data(
+            data_3d=[self.p_previous, self.p_current, self.dp_current, prediction_mat, predicted_path_points,
+                     deriv_at_path_points])
+        plt.pause(0.0001)  # TODO: find a better way ...
 
         return deriv_at_path_points
 
