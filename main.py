@@ -1,11 +1,11 @@
-from controller import Controller
-from data_emitter import DataEmitter
-
-import time
 import queue
 import threading
+import time
+
 import pandas as pd
-import numpy as np
+
+from controller import Controller
+from data_emitter import DataEmitter
 
 
 class Main:
@@ -17,23 +17,24 @@ class Main:
         # threshold to (de)activate goals
         goal_threshold = 1.1
 
-        # minimum distance between samples to start calculating
-        sample_min_distance = 0.0
+        # minimum distance between samples to start calculating (in meters)
+        sample_min_distance = 0.005
 
         # boundaries for normal distribution
         min_variance, max_variance = 0.0625, 0.125
 
-        activate_plotter = False
+        # activate real time plotter
+        activate_plotter = True
 
-
-        self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance, activate_plotter)
+        self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance,
+                                     activate_plotter)
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue)
 
     def run(self):
 
         producer_thread = threading.Thread(target=self.data_emitter.emit_data)
-        producer_thread.daemon = True # so we can close thread with sys.exit
+        producer_thread.daemon = True  # so we can close thread with sys.exit
         producer_thread.start()
 
         while True:
@@ -46,6 +47,5 @@ class Main:
 
 
 if __name__ == "__main__":
-
     main = Main()
     main.run()

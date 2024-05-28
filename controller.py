@@ -1,4 +1,4 @@
-from goal_manager import *
+from goal_manager import GoalManager
 from prediction_model import PredictionModel
 from probability_evaluator import ProbabilityEvaluator
 from real_time_plotter import AnimatedPlots
@@ -8,85 +8,71 @@ class Controller:
     """ A class that controls the flow of data.
 
     Attributes:
-        sample_min_distance: (float)                        minimum distance between samples to calculate prediction
-        prediction_model: (PredictionModel)             the prediction model
-        probability_evaluator: (ProbabilityEvaluator)   the probability evaluator
-
+        goals_position: (List)                          list of goal positions
+        goals_probability: (list)                       list of goals probability
+        goals_sample_quantity: (list)                   list of goals sample quantity
+        animated_plots: (AnimatedPlots)                 instance for animating data
+        goal_manager: (GoalManager)                     instance for manipulating the goal
+        prediction_model: (PredictionModel)             instance for calculating trajectories
+        probability_evaluator: (ProbabilityEvaluator)   instance for evaluating probability
     """
 
     def __init__(self, df, goal_threshold, sample_min_distance, min_variance, max_variance, activate_plotter):
-        """ Initializes the DataProcessor object.
+        """ Constructor for the Controller class.
 
-        :param all_goal_positions: (List[NDArray[np.float64]])  coordinates of all goals
-        :param sample_min_distance: (float)     minimum distance between samples to calculate prediction
+        :param df: (dataframe)                      dataframe with goal positions and goal id
+        :param goal_threshold: (float)              threshold for evaluating distant goal positions
+        :param sample_min_distance: (float)         min distant to start modelling trajectories
+        :param min_variance: (float)                lower limit for variance in normal distribution
+        :param max_variance: (float)                upper limit for variance in normal distribution
+        :param activate_plotter: (bool)             activates the real time plotter
         """
+        self.goals_position = df_process_goal_positions(df)
+        self.goals_probability = [0] * len(self.goals_position)
+        self.goals_sample_quantity = [0] * len(self.goals_position)
 
-        self.active_goal_positions = df_process_goal_positions(df)
-        self.goals_probability = [0] * len(self.active_goal_positions)
-        self.goals_sample_quantity = [0] * len(self.active_goal_positions)
+        # live visualization with real time plotter (optional) #TODO massive performance problems when plotting
+        if activate_plotter:
+            self.animated_plots = AnimatedPlots(self.goals_position)
+            self.animated_plots.animate()
 
-        self.animated_plots = AnimatedPlots(self.active_goal_positions)
-        self.goal_manager = GoalManager(df, self.active_goal_positions, self.goals_probability,
-                                        self.goals_sample_quantity, goal_threshold, self.animated_plots, activate_plotter)
-
-        self.goal_manager.deactivate_goal(3)
-        self.goal_manager.deactivate_goal(4)
-        self.goal_manager.deactivate_goal(5)
-        self.goal_manager.deactivate_goal(6)
-        self.goal_manager.deactivate_goal(8)
-        self.goal_manager.deactivate_goal(10)
-        self.goal_manager.deactivate_goal(13)
-        self.goal_manager.deactivate_goal(15)
-        self.goal_manager.deactivate_goal(23)
-        self.goal_manager.deactivate_goal(24)
-        self.goal_manager.deactivate_goal(25)
-        self.goal_manager.deactivate_goal(28)
-        self.goal_manager.deactivate_goal(29)
-        # always off
-        self.goal_manager.deactivate_goal(32)
-        self.goal_manager.deactivate_goal(33)
-        self.goal_manager.deactivate_goal(34)
+        self.goal_manager = GoalManager(df['ID'].tolist(), self.goals_position, self.goals_probability,
+                                        self.goals_sample_quantity, goal_threshold, self.animated_plots,
+                                        activate_plotter)
 
         self.prediction_model = PredictionModel(sample_min_distance, self.animated_plots, activate_plotter)
         self.probability_evaluator = ProbabilityEvaluator(self.goals_probability, self.goals_sample_quantity,
                                                           min_variance, max_variance)
-        if activate_plotter:
-            self.animated_plots.animate()
 
     def process_data(self, data):
-        """ Processes the incoming data.
+        """ Distributes incoming data. Data contains [0]-> time, [1]-> hand wrist position
+            and [2] -> actions from database.
 
-        :param data: (List[int, NDArray[np.float64]])  data to be processed
+        :param data: (List[int, NDArray[np.float64], Dataframe)     data to be processed
         """
         # TODO: catch bad data
 
-        t_current = data[0]
-        p_current = data[1]
-
-        direction_vectors = self.prediction_model.calculate_predicted_direction(p_current, self.active_goal_positions)
+        # calculate predicted direction
+        direction_vectors = self.prediction_model.calculate_predicted_direction(data[1], self.goals_position)
 
         if direction_vectors is not None:
-
+            # calculate the probability of predicted direction
             self.probability_evaluator.evaluate_angles(self.prediction_model.dp_current, direction_vectors)
-
-        if len(data) > 2:
-            self.goal_manager.update_goals(p_current, t_current, data[2])
         else:
-            self.goal_manager.update_goals(p_current, t_current)
+            print("skipped at: " + str(data[0]))
 
-    def is_bad_data(data):
-        """ checks for bad data """
-        if data[0] < 0 or not isinstance(data[0], int):
-            return True
-
-        """
-        if all(not isinstance(item, float) for item in data[1].flatten().tolist()):
-            return True"""
-
-        return False
+        if len(data) > 2:  # update goals
+            self.goal_manager.update_goals(data[0], data[1], data[2])
+        else:
+            self.goal_manager.update_goals(data[0], data[1])
 
 
 def df_process_goal_positions(df):
+    """ Processes data frame of goal coordinates.
+
+    :param df: (dataframe)      goal position dataframe with ids
+    :return: (list)             list of goal coordinates
+    """
     goal_positions = []
     for index, row in df.iterrows():
         goal_positions.append([row['x'], row['y'], row['z']])

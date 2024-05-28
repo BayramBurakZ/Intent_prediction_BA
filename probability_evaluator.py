@@ -6,14 +6,17 @@ class ProbabilityEvaluator:
     """ A class that evaluates the probability of each goal.
 
         Attributes:
-            goals_sample_quantity: (list)                amount of sample for accumulated probability
-            goals_probability: (list)           probability of each goal
+            goals_probability: (list)       probability of each goal
+            goals_sample_quantity: (list)   amount of sample for accumulated probability
     """
 
     def __init__(self, goals_probability, goals_sample_quantity, min_variance, max_variance):
-        """ Initializes the probability evaluator.
+        """ Constructor for the ProbabilityEvaluator class.
 
-            :param sample_sizes: (list)                amount of sample for accumulated probability
+        :param goals_probability: (list)        list of goals probability
+        :param goals_sample_quantity: (list)    list of goals sample quantity
+        :param min_variance: (float)            lower limit for variance in normal distribution
+        :param max_variance: (float)            upper limit for variance in normal distribution
         """
         self.goals_probability = goals_probability
         self.goals_sample_quantity = goals_sample_quantity
@@ -29,9 +32,11 @@ class ProbabilityEvaluator:
         """
         goal_amount = len(direction_vectors)
         angles = []
+        # calculate angles between measured direction and predicted directions
         for dv in direction_vectors:
             angles.append(calculate_angle(dp_current, dv))
 
+        # calculates standard deviation of all angles
         sd_of_angles = calculate_standard_deviation(angles, self.min_variance, self.max_variance)
 
         for i in range(goal_amount):
@@ -42,7 +47,7 @@ class ProbabilityEvaluator:
 
             # update the sample size
             if np.isclose(self.goals_probability[i], 0, 0.001):
-                self.goals_sample_quantity[i] = 0 # reset sample size along with goal probability
+                self.goals_sample_quantity[i] = 0  # reset sample size along with goal probability
             else:
                 self.goals_sample_quantity[i] += 1
 
@@ -53,14 +58,11 @@ class ProbabilityEvaluator:
 
 
 def calculate_angle(v1, v2):
-    """ Calculates the angle on x,y plane between two vectors. """
-    if v1.shape != 2:
-        # remove z
-        v1 = v1[:2]
+    """ Calculates the angle on x,y plane between two 3D vectors. """
 
-    if v2.shape != 2:
-        # remove z
-        v2 = v2[:2]
+    # remove z component
+    v1 = v1[:2]
+    v2 = v2[:2]
 
     # normalize
     v1_norm = np.linalg.norm(v1)
@@ -79,8 +81,11 @@ def calculate_angle(v1, v2):
 def calculate_standard_deviation(angles, min_variance, max_variance):
     """ Calculates the standard deviation of angles.
 
-    :param angles: (list)   angles of predicted direction vector
-    :return: (float)        standard deviation
+    :param angles: (list)           angles of predicted direction vector
+    :param min_variance: (float)    lower limit for variance in normal distribution
+    :param max_variance: (float)    upper limit for variance in normal distribution
+
+    :return: (float)    standard deviation between angles
     """
     sigma = np.std(angles)
 
@@ -105,8 +110,8 @@ def calculate_probability_goal(cumulative_probability, angle_probability):
 
     :return: (float)                        cumulative probability over samples
     """
-    # lower boundary
-    min_probability = 0.01
+    # lower boundary for probability
+    min_probability = 0.001
 
     # reset cumulated probability ( sample n = 0 )
     if angle_probability < min_probability:

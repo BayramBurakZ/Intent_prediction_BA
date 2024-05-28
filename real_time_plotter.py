@@ -38,6 +38,7 @@ class AnimatedPlots:
             self.data_3d = data_3d
         if data_bar is not None:
             self.data_bar = data_bar
+        plt.pause(0.0001)
 
     def update_plot(self, frame):
         self.update_curves_2d_3d()
@@ -48,16 +49,8 @@ class AnimatedPlots:
         self.ax2.cla()
         if self.data_3d:
             # unpack data
-            p_previous = self.data_3d[0]
-            p_current = self.data_3d[1]
-            dp_current = self.data_3d[2]
-            matrices = self.data_3d[3]
-            path_points = self.data_3d[4]
-            d_path_points = self.data_3d[5]
+            p_previous, p_current, dp_current, matrices, path_points, d_path_points = self.data_3d
 
-            x = []
-            y = []
-            z = []
             for m in matrices:
                 x = np.polyval(m[0], self.ls_interval)
                 y = np.polyval(m[1], self.ls_interval)
@@ -66,15 +59,15 @@ class AnimatedPlots:
                 self.ax1.plot(x, y, z, color="black")
                 self.ax2.plot(x, y, color="black")
 
-            scatter_plot = lambda ax, goal_positions, p_previous, p_current: (
-                [ax.scatter(g[0], g[1], color='green') for g in goal_positions],
-                ax.scatter(p_previous[0], p_previous[1], color='red'),
-                ax.scatter(p_current[0], p_current[1], color='red')
-            )
-            scatter_plot(self.ax1, self.goal_positions, p_previous, p_current)
-            scatter_plot(self.ax2, self.goal_positions, p_previous, p_current)
+            [self.ax1.scatter(g[0], g[1], color='green') for g in self.goal_positions],
+            self.ax1.scatter(p_previous[0], p_previous[1], color='red'),
+            self.ax1.scatter(p_current[0], p_current[1], color='red')
 
-            [self.ax2.scatter(p[0], p[1], color='green') for p in path_points]
+            [self.ax2.scatter(g[0], g[1], color='green') for g in self.goal_positions],
+            self.ax2.scatter(p_previous[0], p_previous[1], color='red'),
+            self.ax2.scatter(p_current[0], p_current[1], color='red')
+
+            [self.ax2.scatter(p[0], p[1], color='blue') for p in path_points]
 
             # plot tangent vectors
 
@@ -94,17 +87,11 @@ class AnimatedPlots:
             self.ax2.set_ylim(-0.7, 0.7)
             self.ax2.set_title("2D Parametric Curve")
 
-
     def update_bar(self):
         self.ax3.cla()
         if self.data_bar:
             # unpack
-            goal_ids = self.data_bar[0]
-            probabilities = self.data_bar[1]
-            sample_quantity = self.data_bar[2]
-            distance = self.data_bar[3]
-            uncat_goal = self.data_bar[4] * 100
-            current_time = self.data_bar[5]
+            goal_ids,probabilities,sample_quantity,distance,uncat_goal,current_time = self.data_bar
 
             # if len(goal_ids) == 0 or len(probabilities) == 0 or len(sample_quantity) == 0 or len(distance) == 0:
             # return
@@ -139,12 +126,10 @@ class AnimatedPlots:
 
             self.ax3.margins(y=0.2)
 
-
     def animate(self):
-        self.ani = FuncAnimation(self.fig, self.update_plot, frames=100, interval=100, repeat=False)
+        self.ani = FuncAnimation(self.fig, self.update_plot, frames=50, interval=10, repeat=False,)
         plt.tight_layout()
         plt.show(block=False)
-
 
     def on_close(self, event):
         sys.exit("EXiT")

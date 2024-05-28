@@ -1,19 +1,22 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
-class PredictionModel:
-    """ A class that represents predicted trajectories for each goal.
 
-     Attributes:
-         p_previous, p_current: (NDArray[np.float64])   two measured points of the hand wrist at given time
-         t_previous, t_current: (int)                   timestamp of the two points
-         dp_previous, dp_current: (NDArray[np.float64]) directional vector at each point
-     """
+class PredictionModel:
+    """ A class that calculates predicted trajectories for each goal.
+
+    Attributes:
+        p_previous, p_current: (NDArray[np.float64])    two measured points of the hand wrist at given time
+        t_previous, t_current: (int)                    timestamp of the two points
+        dp_previous, dp_current: (NDArray[np.float64])  directional vector at each point
+    """
 
     def __init__(self, sample_min_distance, animated_plots, activate_plotter):
-        """ Constructs all necessary attributes for the prediction model. """
+        """ Constructor for PredictionModel class.
 
-        # initialize with general position of wrist
+        :param sample_min_distance: (float)     min distant to start modelling trajectories
+        :param animated_plots: (AnimatedPlots)  instance for animating data
+        :param activate_plotter: (bool)         activates the real time plotter
+        """
         self.p_previous = None
         self.p_current = None
 
@@ -25,16 +28,16 @@ class PredictionModel:
 
         self.activate_plotter = activate_plotter
 
-
     def calculate_predicted_direction(self, p_next, goal_positions):
         """ Calculates the predicted directions for each goal by modeling a cubic polynomial curve in 3D space.
 
-        :param p_next: (NDArray[np.float64])  last measured point of the hand wrist
-        :param t_next: (NDArray[np.float64])  timestamp of last measurement
+        :param p_next: (NDArray[np.float64])    last measured point of the hand wrist
+        :param goal_positions: (list)           position of all goals
 
-        :return: (NDArray[np.float64])   predicted direction of each goal
+        :return: (NDArray[np.float64])  predicted direction of each goal
         """
 
+        # wait for first three measurements to start calculating
         if self.p_previous is None:
             self.p_previous = p_next
             return
@@ -54,14 +57,14 @@ class PredictionModel:
         self.dp_previous = self.dp_current
         self.dp_current = position_derivative(self.p_previous, self.p_current)
 
-        # save predicted trajectories and it's derivatives for each goal
-        prediction_mat = []  # TODO naming! more then one mat
-        deriv_prediction_mat = []
+        # save predicted trajectories and it's derivatives for each goal as matrices
+        prediction_mats = []
+        deriv_prediction_mats = []
 
         for goal in goal_positions:
             m = prediction_model_matrices(self.p_previous, self.dp_previous, np.array([goal[0], goal[1], goal[2]]))
-            prediction_mat.append(m[0])
-            deriv_prediction_mat.append(m[1])
+            prediction_mats.append(m[0])
+            deriv_prediction_mats.append(m[1])
 
         # approximate progress on trajectory and calculate the corresponding directional vector
         predicted_path_points = []
@@ -69,14 +72,14 @@ class PredictionModel:
 
         for i in range(len(goal_positions)):
             s = calculate_path_coordinate(self.p_previous, self.p_current, goal_positions[i])
-            predicted_path_points.append(calculate_polynomial(prediction_mat[i], s))
-            deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mat[i], s)))
+            predicted_path_points.append(calculate_polynomial(prediction_mats[i], s))
+            deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mats[i], s)))
 
+        # plot the trajectories with directional vectors
         if self.activate_plotter:
             self.animated_plots.update_data(
-                data_3d=[self.p_previous, self.p_current, self.dp_current, prediction_mat, predicted_path_points,
+                data_3d=[self.p_previous, self.p_current, self.dp_current, prediction_mats, predicted_path_points,
                          deriv_at_path_points])
-            plt.pause(0.001)  # TODO: find a better way ...
 
         return deriv_at_path_points
 

@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 
 class DataEmitter:
     # TODO: consider calculations for both hand to run in parallel
+    # TODO: preprocess Database to csv data
     def __init__(self, data_queue):
         # CSV with timestamp and coordinates of hand wrist
         path_csv = r'data/right_hand/right_9.csv'
@@ -31,8 +32,7 @@ class DataEmitter:
         timestamps_csv = self.df_csv['time'].values
         timestamps_db = self.df_db['time'].values
         timestamps_db = [int(element) for element in timestamps_db]
-        time_step = 1  # TODO: change this if it takes too much resources
-
+        time_step = 40  # TODO: change this if it takes too much resources
 
         # current_time = timestamps_csv[0]
         current_time = 19480
@@ -67,4 +67,4 @@ class DataEmitter:
             current_time += time_step
 
             # wait for "time_step" amount of milliseconds to simulate real time
-            time.sleep(time_step / 1000)
+            time.sleep(time_step * 100 / 1000)
