@@ -1,22 +1,52 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 
 class GoalManager:
-    def __init__(self, df, active_goal_positions, goals_probability, goals_sample_quantity, goal_threshold):
+    def __init__(self, df, active_goal_positions, goals_probability, goals_sample_quantity, goal_threshold,
+                 animated_plots, activate_plotter):
+
         self.df = initialize_df(df)
         self.goals_active_positions = active_goal_positions
         self.goals_probability = goals_probability
         self.goals_sample_quantity = goals_sample_quantity
         self.goal_threshold = goal_threshold
 
-    def update_goals(self, p_current, t_current, action_db=None, plot_data=None):
+        self.animated_plots = animated_plots
+        self.activate_plotter = activate_plotter
+
+    def update_goals(self, p_current, t_current, action_db=None):
+
         if action_db is not None:
             action_from = action_db['hand']
             action_tuple = (parse_action_string_to_tuples(action_db['action_id']))[0]
             print("received: ", action_tuple, "from: ", action_from)
             self.handle_action(action_tuple)
-            # TODO clean up Database!
-            # other_actions_tuple = parse_action_string_to_tuples(action_db['other_actions'])
+
+        self.update_df()
+        # TODO clean up Database!
+        # other_actions_tuple = parse_action_string_to_tuples(action_db['other_actions'])
+
+        print("time",t_current, " prob:", self.tr(self.goals_probability), "uncat:", self.uncategorized_goal_probability())
+        if self.activate_plotter:
+            self.animated_plots.update_data(
+                data_bar=[self.all_active_ids(), self.goals_probability, self.goals_sample_quantity,
+                          self.distance_to_goals(p_current), self.uncategorized_goal_probability(), t_current])
+
+            plt.pause(0.001)
+
+    def tr(self,g):
+        return [round(x * 100, 2) for x in g]
+
+    def update_df(self):
+        self.df.loc[self.df['active'], 'probability'] = self.goals_probability
+        self.df.loc[self.df['active'], 'sample'] = self.goals_sample_quantity
+
+    def distance_to_goals(self, p_current):
+        d = []
+        for g in self.goals_active_positions:
+            d.append(distance(g, p_current))
+        return d
 
     def activation_radius(self, p_current):
         # TODO: change this with blind spot function
@@ -24,7 +54,6 @@ class GoalManager:
             coordinates = np.array([row['x'], row['y'], row['z']])
             goal_id = row['ID']
 
-            print(distance(coordinates, p_current))
             if row['active'] and distance(coordinates, p_current) > self.goal_threshold:
                 self.deactivate_goal(goal_id)
 
@@ -32,7 +61,7 @@ class GoalManager:
                 self.activate_goal(goal_id)
 
     def uncategorized_goal_probability(self):
-        return max(1, 1 - self.df['probability'].sum())
+        return max(0.0, 1.0 - self.df.loc[self.df['active'], 'probability'].sum())
 
     def activate_goal(self, goal_id):
 
@@ -75,7 +104,7 @@ class GoalManager:
 
         print("removed id: ", goal_id)
 
-    def get_all_active_goals(self):
+    def get_all_active_goals(self):  # TODO DF
         return self.df.loc[self.df['active']].sort_values(by='ID')
 
     def id_to_coordinates(self, goal_id):
@@ -86,9 +115,9 @@ class GoalManager:
         if action[0] == 'pick':
             self.deactivate_goal(action[1])
 
-
-def tr(g):
-    return [round(x * 100, 2) for x in g]
+    def all_active_ids(self):
+        df_active_goals = self.df.loc[self.df['active']].sort_values(by='ID')
+        return df_active_goals['ID'].tolist()
 
 
 def initialize_df(df):

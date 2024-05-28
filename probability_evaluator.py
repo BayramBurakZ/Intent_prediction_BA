@@ -42,7 +42,7 @@ class ProbabilityEvaluator:
 
             # update the sample size
             if np.isclose(self.goals_probability[i], 0, 0.001):
-                self.goals_sample_quantity[i] = 0  # reset sample size along with goal probability
+                self.goals_sample_quantity[i] = 0 # reset sample size along with goal probability
             else:
                 self.goals_sample_quantity[i] += 1
 

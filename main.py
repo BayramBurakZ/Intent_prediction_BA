@@ -18,12 +18,15 @@ class Main:
         goal_threshold = 1.1
 
         # minimum distance between samples to start calculating
-        sample_min_distance = 0.10
+        sample_min_distance = 0.0
 
         # boundaries for normal distribution
         min_variance, max_variance = 0.0625, 0.125
 
-        self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance)
+        activate_plotter = False
+
+
+        self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance, activate_plotter)
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue)
 

@@ -14,7 +14,7 @@ class Controller:
 
     """
 
-    def __init__(self, df, goal_threshold, sample_min_distance, min_variance, max_variance):
+    def __init__(self, df, goal_threshold, sample_min_distance, min_variance, max_variance, activate_plotter):
         """ Initializes the DataProcessor object.
 
         :param all_goal_positions: (List[NDArray[np.float64]])  coordinates of all goals
@@ -27,7 +27,7 @@ class Controller:
 
         self.animated_plots = AnimatedPlots(self.active_goal_positions)
         self.goal_manager = GoalManager(df, self.active_goal_positions, self.goals_probability,
-                                        self.goals_sample_quantity, goal_threshold)
+                                        self.goals_sample_quantity, goal_threshold, self.animated_plots, activate_plotter)
 
         self.goal_manager.deactivate_goal(3)
         self.goal_manager.deactivate_goal(4)
@@ -47,10 +47,11 @@ class Controller:
         self.goal_manager.deactivate_goal(33)
         self.goal_manager.deactivate_goal(34)
 
-        self.prediction_model = PredictionModel(sample_min_distance, self.animated_plots)
+        self.prediction_model = PredictionModel(sample_min_distance, self.animated_plots, activate_plotter)
         self.probability_evaluator = ProbabilityEvaluator(self.goals_probability, self.goals_sample_quantity,
                                                           min_variance, max_variance)
-        self.animated_plots.animate()
+        if activate_plotter:
+            self.animated_plots.animate()
 
     def process_data(self, data):
         """ Processes the incoming data.
@@ -78,7 +79,6 @@ class Controller:
         if data[0] < 0 or not isinstance(data[0], int):
             return True
 
-        # TODO: catch bad coordinates earlier!
         """
         if all(not isinstance(item, float) for item in data[1].flatten().tolist()):
             return True"""

@@ -1,5 +1,5 @@
-from utilities.plots import *
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 class PredictionModel:
     """ A class that represents predicted trajectories for each goal.
@@ -10,7 +10,7 @@ class PredictionModel:
          dp_previous, dp_current: (NDArray[np.float64]) directional vector at each point
      """
 
-    def __init__(self, sample_min_distance, animated_plots):
+    def __init__(self, sample_min_distance, animated_plots, activate_plotter):
         """ Constructs all necessary attributes for the prediction model. """
 
         # initialize with general position of wrist
@@ -22,6 +22,8 @@ class PredictionModel:
 
         self.sample_min_distance = sample_min_distance
         self.animated_plots = animated_plots
+
+        self.activate_plotter = activate_plotter
 
 
     def calculate_predicted_direction(self, p_next, goal_positions):
@@ -70,11 +72,11 @@ class PredictionModel:
             predicted_path_points.append(calculate_polynomial(prediction_mat[i], s))
             deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mat[i], s)))
 
-        # Plotting Model (Optional)
-        self.animated_plots.update_data(
-            data_3d=[self.p_previous, self.p_current, self.dp_current, prediction_mat, predicted_path_points,
-                     deriv_at_path_points])
-        plt.pause(0.0001)  # TODO: find a better way ...
+        if self.activate_plotter:
+            self.animated_plots.update_data(
+                data_3d=[self.p_previous, self.p_current, self.dp_current, prediction_mat, predicted_path_points,
+                         deriv_at_path_points])
+            plt.pause(0.001)  # TODO: find a better way ...
 
         return deriv_at_path_points
 

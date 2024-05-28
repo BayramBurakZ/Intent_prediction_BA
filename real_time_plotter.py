@@ -31,6 +31,7 @@ class AnimatedPlots:
         # histogram plot
         self.ax3 = self.fig.add_subplot(133)
         self.bars = None
+        self.texts = []
 
     def update_data(self, data_3d=None, data_bar=None):
         if data_3d is not None:
@@ -40,7 +41,7 @@ class AnimatedPlots:
 
     def update_plot(self, frame):
         self.update_curves_2d_3d()
-        # self.update_histogram()
+        self.update_bar()
 
     def update_curves_2d_3d(self):
         self.ax1.cla()
@@ -93,22 +94,57 @@ class AnimatedPlots:
             self.ax2.set_ylim(-0.7, 0.7)
             self.ax2.set_title("2D Parametric Curve")
 
-    def update_histogram(self):
+
+    def update_bar(self):
         self.ax3.cla()
         if self.data_bar:
-            x = np.arange(len(self.data_bar))
+            # unpack
+            goal_ids = self.data_bar[0]
+            probabilities = self.data_bar[1]
+            sample_quantity = self.data_bar[2]
+            distance = self.data_bar[3]
+            uncat_goal = self.data_bar[4] * 100
+            current_time = self.data_bar[5]
 
-            if self.bars is None:
-                self.bars = self.ax3.bar(x, self.data_bar)
-            else:
-                for bar, height in zip(self.bars, self.data_bar):
-                    bar.set_height(height)
+            # if len(goal_ids) == 0 or len(probabilities) == 0 or len(sample_quantity) == 0 or len(distance) == 0:
+            # return
+
+            x = goal_ids
+            y = [prob * 100 for prob in probabilities]
+            self.ax3.set_ylim(0, 100)
+
+            self.bars = self.ax3.bar(x, y, width=0.8)
+            self.ax3.set_xlim(min(goal_ids) - 0.5, max(goal_ids) + 0.5)
             self.ax3.set_title("Bar Plot")
 
+            # Set x-ticks and labels
+            self.ax3.set_xticks(x)
+            self.ax3.set_xticklabels([f'{goal}\n{dist:.2f}' for goal, dist in zip(goal_ids, distance)])
+
+            # Create a secondary x-axis for the upper labels
+            sec_ax = self.ax3.secondary_xaxis('top')
+            sec_ax.set_xticks(x)
+            sec_ax.set_xticklabels([f'{goal}\n{sample}' for goal, sample in zip(goal_ids, sample_quantity)])
+
+            # Adding a custom legend
+            legend_label1 = f'upperX: sample/id \nlowerX: distance/id \nY: probability'
+            legend_label2 = f'Time: {current_time} \nUncategorized goal: {uncat_goal:.2f}%'
+            self.ax3.text(0.95, 0.95, legend_label1, transform=self.ax3.transAxes, ha='right', va='top')
+
+            self.ax3.text(0.05, 0.95, legend_label2, transform=self.ax3.transAxes, ha='left', va='top')
+
+            # Adjusting plot to fit lower text
+            self.ax3.margins(y=0.2)
+            self.ax3.figure.tight_layout()
+
+            self.ax3.margins(y=0.2)
+
+
     def animate(self):
-        self.ani = FuncAnimation(self.fig, self.update_plot, frames=25, interval=200, repeat=False)
+        self.ani = FuncAnimation(self.fig, self.update_plot, frames=100, interval=100, repeat=False)
         plt.tight_layout()
         plt.show(block=False)
+
 
     def on_close(self, event):
         sys.exit("EXiT")
