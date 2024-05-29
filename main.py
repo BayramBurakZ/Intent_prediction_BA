@@ -18,12 +18,12 @@ class Main:
         goal_threshold = 1.1
 
         # minimum distance between samples to start calculating (in meters)
-        sample_min_distance = 0.001
+        sample_min_distance = 0.05
         min_predicted_prog = 0.15
 
         # boundaries for normal distribution
-        min_variance, max_variance = 0.0625, 0.125
-        #min_variance, max_variance = 0.005, 0.5555
+        min_variance, max_variance = 0.0625, 0.03125
+        #min_variance, max_variance = 0.125, 0.03125
 
         # activate real time plotter
         activate_plotter = True

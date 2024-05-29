@@ -40,7 +40,7 @@ class ProbabilityEvaluator:
         sd_of_angles = calculate_standard_deviation(angles, self.min_variance, self.max_variance)
 
         for i in range(goal_amount):
-            # probability an angle
+            # probability an angle from probability density function
             angle_probability = stats.norm.pdf(angles[i], 0, sd_of_angles)
             # accumulated probability over n samples
             self.goals_probability[i] = calculate_probability_goal(self.goals_probability[i], angle_probability)
@@ -57,29 +57,25 @@ class ProbabilityEvaluator:
             self.goals_probability[i] /= norm_divisor
 
 
-def calculate_angle(v1, v2):
+def calculate_angle(v1_xyz, v2_xyz):
     """ Calculates the angle on x,y plane between two 3D vectors. """
 
     # remove z component
-    v1 = v1[:2]
-    v2 = v2[:2]
-
-    # normalize
-    v1_norm = np.linalg.norm(v1)
-    v2_norm = np.linalg.norm(v2)
-
-    # return 90 degrees when dot product is 0
-    if np.isclose(v1_norm, 0, 0.001) or np.isclose(v2_norm, 0, 0.001):
-        return np.pi / 2
+    v1 = np.array([v1_xyz[0], v1_xyz[1]])
+    v2 = np.array([v2_xyz[0], v2_xyz[1]])
 
     # calculate angle
     dot = np.dot(v1, v2)
+    v1_norm = np.linalg.norm(v1)
+    v2_norm = np.linalg.norm(v2)
 
-    cos_angle = abs(dot / (v1_norm * v2_norm))
+    if np.isclose(v1_norm, 0, 0.001) or np.isclose(v2_norm, 0, 0.001):
+        return np.pi
 
-    # return angle of 0
-    if np.isclose(cos_angle, 1, 0.001):
-        return 0.0
+    cos_angle = dot / (v1_norm * v2_norm)
+
+    # for numerical precision
+    cos_angle = np.clip(cos_angle, -1.0, 1.0)
 
     return np.arccos(cos_angle)  # in radiance
 
@@ -99,13 +95,7 @@ def calculate_standard_deviation(angles, min_variance, max_variance):
     min_sd = np.sqrt(min_variance)
     max_sd = np.sqrt(max_variance)
 
-    if sigma < min_sd:
-        sigma = min_sd
-
-    if sigma > max_sd:
-        sigma = max_sd
-
-    return sigma
+    return max(min_sd, min(sigma, max_sd))
 
 
 def calculate_probability_goal(cumulative_probability, angle_probability):

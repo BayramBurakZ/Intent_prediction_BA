@@ -78,13 +78,13 @@ class AnimatedPlots:
             self.ax2.quiver(p_current[0], p_current[1], dp_current[0], dp_current[1], scale=5, color='red',
                             width=0.01)
 
-            self.ax1.set_xlim(0, 1.5)
-            self.ax1.set_ylim(-0.7, 0.7)
+            self.ax1.set_xlim(-0.1, 1.1)
+            self.ax1.set_ylim(-1.1, 1.1)
             self.ax1.set_zlim(-0.4, 1.1)
             self.ax1.set_title("3D Parametric Curve")
 
-            self.ax2.set_xlim(0, 1.5)
-            self.ax2.set_ylim(-0.7, 0.7)
+            self.ax2.set_xlim(-0.1, 1.1)
+            self.ax2.set_ylim(-1.1, 1.1)
             self.ax2.set_title("2D Parametric Curve")
 
     def update_bar(self):
