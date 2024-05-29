@@ -49,7 +49,9 @@ def plot_2d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
     plt.show()
 
 
-def plot_3d_curve(M, p, pn, pn_prime, goals, path_points, tangential_vectors):
+def plot_3d_curve(data_3d, goals):
+    p, pn, pn_prime, M, path_points, tangential_vectors = data_3d
+
     ax = plt.figure().add_subplot(projection='3d')
     t = np.linspace(0, 1, 100)
 

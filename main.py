@@ -26,7 +26,7 @@ class Main:
         #min_variance, max_variance = 0.005, 0.5555
 
         # activate real time plotter
-        activate_plotter = False
+        activate_plotter = True
 
         self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance,
                                      activate_plotter, min_predicted_prog)

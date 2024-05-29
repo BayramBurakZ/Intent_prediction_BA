@@ -74,7 +74,7 @@ class PredictionModel:
         for i in range(len(goal_positions)):
 
             s = self.min_prediction_prog
-            if not min_prog: # calculate approximated progression
+            if not min_prog:  # calculate approximated progression
                 s = calculate_path_coordinate(self.p_previous, self.p_current, goal_positions[i])
 
             predicted_path_points.append(calculate_polynomial(prediction_mats[i], s))
