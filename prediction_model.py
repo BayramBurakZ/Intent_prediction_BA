@@ -104,6 +104,7 @@ def calculate_path_coordinate(p_previous, p_current, p_goal):
 
     :return: predicted path coordinate
     """
+    # TODO this doesn't translate well with small distant measurements
     distance_a = np.linalg.norm(p_current - p_previous)
     distance_b = np.linalg.norm(p_goal - p_current)
     return distance_a / (distance_a + distance_b)

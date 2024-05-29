@@ -32,10 +32,8 @@ class Controller:
         self.goals_sample_quantity = [0] * len(self.goals_position)
 
         # live visualization with real time plotter (optional) #TODO massive performance problems when plotting
-        if activate_plotter:
-            self.animated_plots = AnimatedPlots(self.goals_position)
-            self.animated_plots.animate()
 
+        self.animated_plots = AnimatedPlots(self.goals_position)
         self.goal_manager = GoalManager(df['ID'].tolist(), self.goals_position, self.goals_probability,
                                         self.goals_sample_quantity, goal_threshold, self.animated_plots,
                                         activate_plotter)
@@ -43,6 +41,8 @@ class Controller:
         self.prediction_model = PredictionModel(sample_min_distance, self.animated_plots, activate_plotter)
         self.probability_evaluator = ProbabilityEvaluator(self.goals_probability, self.goals_sample_quantity,
                                                           min_variance, max_variance)
+        if activate_plotter:
+            self.animated_plots.animate()
 
     def process_data(self, data):
         """ Distributes incoming data. Data contains [0]-> time, [1]-> hand wrist position

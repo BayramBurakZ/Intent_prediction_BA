@@ -41,7 +41,7 @@ class GoalManager:
             self.handle_action(action_tuple)
 
         print("time", t_current, " prob:", dec_to_per(self.goals_probability), "uncat:",
-              self.uncategorized_goal_probability())
+              self.uncategorized_goal_probability(), "sample: ", self.goals_sample_quantity )
 
         # plot probabilities
         if self.activate_plotter:

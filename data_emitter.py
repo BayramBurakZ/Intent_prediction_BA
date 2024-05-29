@@ -7,7 +7,6 @@ from sqlalchemy import create_engine
 
 
 class DataEmitter:
-    # TODO: consider calculations for both hand to run in parallel
     # TODO: preprocess Database to csv data
     def __init__(self, data_queue):
         # CSV with timestamp and coordinates of hand wrist
@@ -15,35 +14,25 @@ class DataEmitter:
         self.df_csv = pd.read_csv(path_csv)
         self.data_queue = data_queue
 
-        # Database with actions
-        path_db = r'data/study_db/Log_data_with_token_shapes.db'
-        table_name = 'new_table'
-        column_name1 = 'participant_id'
-        column_name2 = 'trial'
-        filter_value1 = '31612'
-        filter_value2 = '0'
+        # CSV with actions from database
+        path_db = r'data/db_actions/action_31612_0.csv'
+        self.df_db = pd.read_csv(path_db)
 
-        engine = create_engine(f"sqlite:///{path_db}")
-        query = f"SELECT * FROM {table_name} WHERE {column_name1} = {filter_value1} AND {column_name2} = {filter_value2}"
-        self.df_db = pd.read_sql_query(query, con=engine)
-        self.df_db = self.df_db[['time', 'hand', 'action_id', 'other_actions']]
+        self.use_database = False
 
     def emit_data(self):
         timestamps_csv = self.df_csv['time'].values
         timestamps_db = self.df_db['time'].values
         timestamps_db = [int(element) for element in timestamps_db]
-        time_step = 40  # TODO: change this if it takes too much resources
 
-        # current_time = timestamps_csv[0]
-        current_time = 19480
-        # current_index = 0
+        time_step = 200
+        current_time = timestamps_csv[0]
+        #current_time = 19480
+        current_index = 0
         db_index = 0
-        current_index = (self.df_csv['time'] >= current_time).idxmax()
+        #current_index = (self.df_csv['time'] >= current_time).idxmax()
 
         while current_index < len(timestamps_csv):
-            if db_index >= 32:
-                sys.exit()
-
             data = []
 
             # select next highest timestamp with simulated time
@@ -56,7 +45,8 @@ class DataEmitter:
                 data.append(ts)
                 data.append(coordinates)
                 current_index += 1
-                if current_time >= timestamps_db[0]:
+
+                if current_time >= timestamps_db[0] and self.use_database:
                     timestamps_db.pop(0)
                     row = self.df_db.iloc[db_index]
                     db_index += 1
@@ -67,4 +57,6 @@ class DataEmitter:
             current_time += time_step
 
             # wait for "time_step" amount of milliseconds to simulate real time
-            time.sleep(time_step * 100 / 1000)
+            time.sleep(time_step * 1 / 1000)
+
+        sys.exit("EXIT: CSV finished")

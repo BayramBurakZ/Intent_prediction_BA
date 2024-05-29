@@ -11,20 +11,20 @@ from data_emitter import DataEmitter
 class Main:
     def __init__(self):
         # all goal positions and ids are saved in csv->(ID, x, y, z)
-        path = r'data/goals/goals.csv'
+        path = r'data/goals/goal_test1.csv'
         df = pd.read_csv(path)
 
         # threshold to (de)activate goals
         goal_threshold = 1.1
 
         # minimum distance between samples to start calculating (in meters)
-        sample_min_distance = 0.005
+        sample_min_distance = 0.001
 
         # boundaries for normal distribution
         min_variance, max_variance = 0.0625, 0.125
 
         # activate real time plotter
-        activate_plotter = True
+        activate_plotter = False
 
         self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance,
                                      activate_plotter)
