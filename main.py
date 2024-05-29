@@ -11,7 +11,7 @@ from data_emitter import DataEmitter
 class Main:
     def __init__(self):
         # all goal positions and ids are saved in csv->(ID, x, y, z)
-        path = r'data/goals/goal_test1.csv'
+        path = r'data/goals/goals_test1.csv'
         df = pd.read_csv(path)
 
         # threshold to (de)activate goals

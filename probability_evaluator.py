@@ -68,12 +68,18 @@ def calculate_angle(v1, v2):
     v1_norm = np.linalg.norm(v1)
     v2_norm = np.linalg.norm(v2)
 
+    # return 90 degrees when dot product is 0
     if np.isclose(v1_norm, 0, 0.001) or np.isclose(v2_norm, 0, 0.001):
-        return np.pi
+        return np.pi / 2
 
     # calculate angle
     dot = np.dot(v1, v2)
-    cos_angle = dot / (v1_norm * v2_norm)
+
+    cos_angle = abs(dot / (v1_norm * v2_norm))
+
+    # return angle of 0
+    if np.isclose(cos_angle, 1, 0.001):
+        return 0.0
 
     return np.arccos(cos_angle)  # in radiance
 
