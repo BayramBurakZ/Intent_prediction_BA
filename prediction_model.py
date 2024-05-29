@@ -10,22 +10,24 @@ class PredictionModel:
         dp_previous, dp_current: (NDArray[np.float64])  directional vector at each point
     """
 
-    def __init__(self, sample_min_distance, animated_plots, activate_plotter):
+    def __init__(self, sample_min_distance, animated_plots, activate_plotter, min_prediction_prog):
         """ Constructor for PredictionModel class.
 
         :param sample_min_distance: (float)     min distant to start modelling trajectories
         :param animated_plots: (AnimatedPlots)  instance for animating data
+        :param min_prediction_prog: (float)     minimum prediction progression
         :param activate_plotter: (bool)         activates the real time plotter
+
         """
         self.p_previous = None
         self.p_current = None
-
         self.dp_previous = None
         self.dp_current = None
 
         self.sample_min_distance = sample_min_distance
-        self.animated_plots = animated_plots
+        self.min_prediction_prog = min_prediction_prog
 
+        self.animated_plots = animated_plots
         self.activate_plotter = activate_plotter
 
     def calculate_predicted_direction(self, p_next, goal_positions):
@@ -47,15 +49,14 @@ class PredictionModel:
             self.dp_current = position_derivative(self.p_previous, self.p_current)
             return
 
-        # only calculate after minimum distance between measurements is reached
-        if distance(self.p_current, p_next) < self.sample_min_distance:
-            return
-
         # shift coordinates, timestamps and derivative
         self.p_previous = self.p_current
         self.p_current = p_next
         self.dp_previous = self.dp_current
         self.dp_current = position_derivative(self.p_previous, self.p_current)
+
+        # default to minimum progression on predicted trajectories if minimum distance is not reached
+        min_prog = distance(self.p_current, p_next) < self.sample_min_distance
 
         # save predicted trajectories and it's derivatives for each goal as matrices
         prediction_mats = []
@@ -71,7 +72,11 @@ class PredictionModel:
         deriv_at_path_points = []
 
         for i in range(len(goal_positions)):
-            s = calculate_path_coordinate(self.p_previous, self.p_current, goal_positions[i])
+
+            s = self.min_prediction_prog
+            if not min_prog: # calculate approximated progression
+                s = calculate_path_coordinate(self.p_previous, self.p_current, goal_positions[i])
+
             predicted_path_points.append(calculate_polynomial(prediction_mats[i], s))
             deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mats[i], s)))
 
@@ -104,7 +109,6 @@ def calculate_path_coordinate(p_previous, p_current, p_goal):
 
     :return: predicted path coordinate
     """
-    # TODO this doesn't translate well with small distant measurements
     distance_a = np.linalg.norm(p_current - p_previous)
     distance_b = np.linalg.norm(p_goal - p_current)
     return distance_a / (distance_a + distance_b)

@@ -19,15 +19,17 @@ class Main:
 
         # minimum distance between samples to start calculating (in meters)
         sample_min_distance = 0.001
+        min_predicted_prog = 0.15
 
         # boundaries for normal distribution
         min_variance, max_variance = 0.0625, 0.125
+        #min_variance, max_variance = 0.005, 0.5555
 
         # activate real time plotter
         activate_plotter = False
 
         self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance,
-                                     activate_plotter)
+                                     activate_plotter, min_predicted_prog)
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue)
 

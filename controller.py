@@ -17,7 +17,8 @@ class Controller:
         probability_evaluator: (ProbabilityEvaluator)   instance for evaluating probability
     """
 
-    def __init__(self, df, goal_threshold, sample_min_distance, min_variance, max_variance, activate_plotter):
+    def __init__(self, df, goal_threshold, sample_min_distance, min_variance, max_variance, activate_plotter,
+                 min_prediction_prog):
         """ Constructor for the Controller class.
 
         :param df: (dataframe)                      dataframe with goal positions and goal id
@@ -26,6 +27,7 @@ class Controller:
         :param min_variance: (float)                lower limit for variance in normal distribution
         :param max_variance: (float)                upper limit for variance in normal distribution
         :param activate_plotter: (bool)             activates the real time plotter
+        :param min_prediction_prog: (float)         minimum prediction progression
         """
         self.goals_position = df_process_goal_positions(df)
         self.goals_probability = [0] * len(self.goals_position)
@@ -38,7 +40,8 @@ class Controller:
                                         self.goals_sample_quantity, goal_threshold, self.animated_plots,
                                         activate_plotter)
 
-        self.prediction_model = PredictionModel(sample_min_distance, self.animated_plots, activate_plotter)
+        self.prediction_model = PredictionModel(sample_min_distance, self.animated_plots, activate_plotter,
+                                                min_prediction_prog)
         self.probability_evaluator = ProbabilityEvaluator(self.goals_probability, self.goals_sample_quantity,
                                                           min_variance, max_variance)
         if activate_plotter:

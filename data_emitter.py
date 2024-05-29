@@ -10,7 +10,8 @@ class DataEmitter:
     # TODO: preprocess Database to csv data
     def __init__(self, data_queue):
         # CSV with timestamp and coordinates of hand wrist
-        path_csv = r'data/right_hand/right_9.csv'
+        path_csv = r'data/test_trajectories/test1.csv'
+        #path_csv = r'data/right_hand/right_9.csv'
         self.df_csv = pd.read_csv(path_csv)
         self.data_queue = data_queue
 
@@ -25,7 +26,7 @@ class DataEmitter:
         timestamps_db = self.df_db['time'].values
         timestamps_db = [int(element) for element in timestamps_db]
 
-        time_step = 200
+        time_step = 17 # 17 ~ 60hz, 100 = 10hz
         current_time = timestamps_csv[0]
         #current_time = 19480
         current_index = 0
