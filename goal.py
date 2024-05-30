@@ -17,7 +17,7 @@ class Goal:
         dppt: (NDArray[np.float64])     derivative at predicted point
 
         angle: (float)                  angle between last measured and predicted direction
-        prob_total: (float)             accumulated probability of samples
+        prob: (float)                   accumulated probability of samples
         sq: (int)                       sample quantity
     """
 
@@ -36,12 +36,12 @@ class Goal:
         self.angle = np.pi
 
         # probability
-        self.prob_total = 0.0
+        self.prob = 0.0
         self.sq = 0
 
     def set_distance(self, curr_p):
         self.prev_dist = self.dist
-        self.dist = np.linalg.norm(curr_p, self.dist)
+        self.dist = np.linalg.norm(curr_p - self.pos)
 
     def set_matrices(self, mat):
         self.mat = mat[0]
@@ -58,20 +58,23 @@ class Goal:
         # lower boundary for probability at 1%
         min_probability = 0.001
 
-        if prob_last < min_probability:  # reset
-            self.prob_total = 0.0
+        if prob_last < min_probability or self.prev_dist < self.dist:  # reset
+            self.prob = 0.0
             self.sq = 0
 
-        elif self.prob_total < min_probability:  # begin
-            self.prob_total = prob_last
+        elif self.prob < min_probability:  # begin
+            self.prob = prob_last
             self.sq = 1
 
         else:  # update
-            self.prob_total *= prob_last
+            self.prob *= prob_last
             self.sq += 1
 
     def normalize_probability(self, divisor):
-        self.prob_total /= divisor
+        self.prob /= divisor
+
+    def print_stats(self):
+        print( f'num: {self.num}| prob: {self.prob}| sq: {self.sq}| angle: {self.angle}' )
 
 
 def calc_poly(matrix, s):

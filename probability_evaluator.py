@@ -27,7 +27,7 @@ class ProbabilityEvaluator:
         [g.update_probability(stats.norm.pdf(g.angle, 0, sd_of_angles)) for g in self.goals]
 
         # normalize probability of goals
-        norm_divisor = max(1, sum(g.prob_total for g in self.goals))
+        norm_divisor = max(1, sum(g.prob for g in self.goals))
         [g.normalize_probability(norm_divisor) for g in self.goals]
 
 

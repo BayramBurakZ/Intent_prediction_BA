@@ -60,7 +60,7 @@ class PredictionModel:
             [g.set_progression(calc_ppc(self.prev_p, self.curr_p, g.pos)) for g in self.goals]
 
         # set angles between measured and predicted direction
-        [setattr(g, 'angle', calc_angle(g.pos, self.curr_p)) for g in self.goals]
+        [setattr(g, 'angle', calc_angle(g.dppt, self.curr_dp)) for g in self.goals]
 
 
 def point_direction(p1, p2):

@@ -11,11 +11,11 @@ from data_emitter import DataEmitter
 class Main:
     def __init__(self):
         # all goal positions and ids are saved in csv->(ID, x, y, z)
-        path_goals = r'data/goals/goals_test1.csv'
+        path_goals = r'data/goals/goals_test3.csv'
         df_goals = pd.read_csv(path_goals)
 
         # CSV with timestamp and coordinates of hand wrist
-        path_trajectories = r'data/test_trajectories/test3.csv'
+        path_trajectories = r'data/test_trajectories/traj_test3.csv'
         df_trajectories = pd.read_csv(path_trajectories)
 
         # CSV with actions from database
@@ -27,8 +27,8 @@ class Main:
         MIN_PROG = 0.15
 
         # variance boundaries for normal distribution
-        #MIN_VAR, MAX_VAR = 0.0625, 0.03125
-        MIN_VAR, MAX_VAR = 0.125, 0.03125
+        MIN_VAR, MAX_VAR = 0.0625, 0.03125
+        #MIN_VAR, MAX_VAR = 0.125, 0.03125
 
         # activate real time plotter
         PLOTTER_ENABLED = False

@@ -6,9 +6,10 @@ from matplotlib.animation import FuncAnimation
 
 
 class AnimatedPlots:
-    def __init__(self, ls_interval=100):
+    def __init__(self, goals, ls_interval=100):
 
         self.ls_interval = np.linspace(0, 1, ls_interval)
+        self.goals = goals
         self.data = []
 
         # figure for plots
@@ -31,32 +32,38 @@ class AnimatedPlots:
         self.bars = None
         self.texts = []
 
+        # skip first 3 iterations
+        self.counter = 0
+
     def update_data(self, data):
         if data is not None:
             self.data = data
+            self.counter += 1
 
+        if self.counter == 3:
+            self.animate()
+
+        plt.pause(0.001)
 
 
     def update_plot(self, frame):
-        if self.data is None:
+        if self.data is None or self.counter < 3:
             return
 
         self.ax1.cla()
         self.ax2.cla()
         self.ax3.cla()
 
-        # unpack data matrices, path_points, d_path_points
-        goals = self.data.pop(0)
-        ids = [g.num for g in goals]
-        matrices = [[g.mat, g.dmat] for g in goals]
-        path_points = [g.ppt for g in goals]
-        d_path_points = [g.dppt for g in goals]
-        sqs = [g.sq for g in goals]
-        distances = [g.dist for g in goals]
-        probabilities = [g.prob for g in goals]
+        ids = [g.num for g in self.goals]
+        pos = [g.pos for g in self.goals]
+        matrices = [g.mat for g in self.goals]
+        path_points = [g.ppt for g in self.goals]
+        d_path_points = [g.dppt for g in self.goals]
+        sqs = [g.sq for g in self.goals]
+        distances = [g.dist for g in self.goals]
+        probabilities = [g.prob for g in self.goals]
 
-        prev_p, curr_p, cur_t, uncat_goal = self.data
-        curr_dp = point_direction(prev_p, curr_p)
+        prev_p, curr_p, cur_t, curr_dp, uncat_goal = self.data
 
         for m in matrices:
             x = np.polyval(m[0], self.ls_interval)
@@ -66,11 +73,11 @@ class AnimatedPlots:
             self.ax1.plot(x, y, z, color="black")
             self.ax2.plot(x, y, color="black")
 
-        [self.ax1.scatter(g[0], g[1], color='green') for g in self.goal_positions],
+        [self.ax1.scatter(g[0], g[1], color='green') for g in pos],
         self.ax1.scatter(prev_p[0], prev_p[1], color='red'),
         self.ax1.scatter(curr_p[0], curr_p[1], color='red')
 
-        [self.ax2.scatter(g[0], g[1], color='green') for g in self.goal_positions],
+        [self.ax2.scatter(g[0], g[1], color='green') for g in pos],
         self.ax2.scatter(prev_p[0], prev_p[1], color='red'),
         self.ax2.scatter(curr_p[0], curr_p[1], color='red')
 
@@ -93,8 +100,6 @@ class AnimatedPlots:
         self.ax2.set_xlim(-0.1, 1.1)
         self.ax2.set_ylim(-1.1, 1.1)
         self.ax2.set_title("2D Parametric Curve")
-
-
 
         ################################# BAR PLOT ###################################
 
@@ -128,20 +133,11 @@ class AnimatedPlots:
 
         self.ax3.margins(y=0.2)
 
-        plt.pause(0.01)
-
-
 
     def animate(self):
-        self.ani = FuncAnimation(self.fig, self.update_plot, frames=25, interval=40, repeat=False,)
+        self.ani = FuncAnimation(self.fig, self.update_plot, frames=25, interval=40, repeat=False)
         plt.tight_layout()
         plt.show(block=False)
 
     def on_close(self, event):
         sys.exit("EXiT")
-
-def point_direction(p1, p2):
-    """ Calculates the normalized direction vector of two points. """
-    p = p2 - p1
-    divisor = np.linalg.norm(p)
-    return p if divisor == 0 else p / np.linalg.norm(p)

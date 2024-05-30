@@ -18,7 +18,7 @@ class DataEmitter:
         timestamps_db = self.df_actions['time'].values
         timestamps_db = [int(element) for element in timestamps_db]
 
-        time_step = 100  # 17 ~ 60hz, 100 = 10hz
+        time_step = 10  # 17 ~ 60hz, 100 = 10hz
         current_time = timestamps_csv[0]
         current_index = 0
         db_index = 0

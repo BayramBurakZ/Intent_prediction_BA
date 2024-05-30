@@ -1,10 +1,10 @@
-from goal import Goal
+import numpy as np
+
 from action_handler import ActionHandler
+from goal import Goal
 from prediction_model import PredictionModel
 from probability_evaluator import ProbabilityEvaluator
 from real_time_plotter import AnimatedPlots
-
-import numpy as np
 
 
 class Controller:
@@ -34,11 +34,8 @@ class Controller:
         self.action_handler = ActionHandler(self.goals)
 
         # live visualization with real time plotter (optional) #TODO massive performance problems when plotting
-        self.animated_plots = AnimatedPlots()
+        self.animated_plots = AnimatedPlots(self.goals)
         self.PLOTTER_ENABLED = PLOTTER_ENABLED
-
-        if PLOTTER_ENABLED:
-            self.animated_plots.animate()
 
     def process_data(self, data):
         """ Distributes incoming data. Data contains [0]-> time, [1]-> hand wrist position
@@ -59,20 +56,24 @@ class Controller:
             self.action_handler.handle_action(data[2])
 
         # TODO somewhere here bug
-        probabilities = [round(g.prob_total*100, 2) for g in self.goals]
+        probabilities = [round(g.prob * 100, 2) for g in self.goals]
         uncat_goal = round(max(1 - sum(probabilities), 0) * 100, 2)
+
         print("time: ", data[0], " probability: ", probabilities, " uncategorized goal: ", uncat_goal)
 
+        """for g in self.goals:
+            g.print_stats()"""
+
         if self.PLOTTER_ENABLED:
-            self.animated_plots.update_data([self.goals, ])
+            self.animated_plots.update_data([self.prediction_model.prev_p, data[1], data[0],
+                                             self.prediction_model.curr_dp, uncat_goal])
 
 
 def process_df(df):
     """ Processes dataframe """
     data = []
     for index, row in df.iterrows():
-        data.append((row['ID'], np.array([row['x'], row['y'], row['z']])))
+        data.append((int(row['ID']), np.array([row['x'], row['y'], row['z']])))
 
     assert len(data) > 0, "the list of goal can not be empty"
     return data
-

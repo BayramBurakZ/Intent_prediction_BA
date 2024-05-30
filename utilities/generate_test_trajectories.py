@@ -39,5 +39,5 @@ df['z'] = [1.0,1.0,1.0,1.0]"""
 
 #path = r'../data/goals/goal_test2.csv '
 
-path = r'../data/test_trajectories/test3.csv'
+path = r'../data/test_trajectories/traj_test3.csv'
 df.to_csv(path, index=False)
