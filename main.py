@@ -14,8 +14,6 @@ class Main:
         path = r'data/goals/goals_test1.csv'
         df = pd.read_csv(path)
 
-        # threshold to (de)activate goals
-        goal_threshold = 1.1
 
         # minimum distance between samples to start calculating (in meters)
         sample_min_distance = 0.05
@@ -26,9 +24,9 @@ class Main:
         #min_variance, max_variance = 0.125, 0.03125
 
         # activate real time plotter
-        activate_plotter = True
+        activate_plotter = False
 
-        self.controller = Controller(df, goal_threshold, sample_min_distance, min_variance, max_variance,
+        self.controller = Controller(df, sample_min_distance, min_variance, max_variance,
                                      activate_plotter, min_predicted_prog)
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue)

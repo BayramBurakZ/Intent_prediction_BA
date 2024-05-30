@@ -5,139 +5,100 @@ class PredictionModel:
     """ A class that calculates predicted trajectories for each goal.
 
     Attributes:
-        p_previous, p_current: (NDArray[np.float64])    two measured points of the hand wrist at given time
-        t_previous, t_current: (int)                    timestamp of the two points
-        dp_previous, dp_current: (NDArray[np.float64])  directional vector at each point
+        goals (List)                                    List of goal instances
+        prev_p, curr_p: (NDArray[np.float64])           two measured points of the hand wrist at given time
+        prev_dp, curr_dp: (NDArray[np.float64])         directional vector at each point
     """
 
-    def __init__(self, sample_min_distance, animated_plots, activate_plotter, min_prediction_prog):
-        """ Constructor for PredictionModel class.
-
-        :param sample_min_distance: (float)     min distant to start modelling trajectories
-        :param animated_plots: (AnimatedPlots)  instance for animating data
-        :param min_prediction_prog: (float)     minimum prediction progression
-        :param activate_plotter: (bool)         activates the real time plotter
-
+    def __init__(self, goals, min_dist, min_prog):
         """
-        self.p_previous = None
-        self.p_current = None
-        self.dp_previous = None
-        self.dp_current = None
+        :param min_dist: (float)     minimum distance to use lower boundary
+        :param min_prog: (float)     minimum prediction progression as lower boundary
+        """
+        self.goals = goals
 
-        self.sample_min_distance = sample_min_distance
-        self.min_prediction_prog = min_prediction_prog
+        self.prev_p = None
+        self.curr_p = None
+        self.prev_dp = None
+        self.curr_dp = None
 
-        self.animated_plots = animated_plots
-        self.activate_plotter = activate_plotter
+        self.min_dist = min_dist
+        self.min_prog = min_prog
 
-    def calculate_predicted_direction(self, p_next, goal_positions):
+    def update(self, next_p):
         """ Calculates the predicted directions for each goal by modeling a cubic polynomial curve in 3D space.
-
-        :param p_next: (NDArray[np.float64])    last measured point of the hand wrist
-        :param goal_positions: (list)           position of all goals
-
-        :return: (NDArray[np.float64])  predicted direction of each goal
+        :param next_p: (NDArray[np.float64])    last measured point of the hand wrist
         """
 
         # wait for first three measurements to start calculating
-        if self.p_previous is None:
-            self.p_previous = p_next
+        if self.prev_p is None:
+            self.prev_p = next_p
             return
 
-        if self.p_current is None:
-            self.p_current = p_next
-            self.dp_current = position_derivative(self.p_previous, self.p_current)
+        if self.curr_p is None:
+            self.curr_p = next_p
+            self.curr_dp = point_direction(self.prev_p, self.curr_p)
             return
 
         # shift coordinates, timestamps and derivative
-        self.p_previous = self.p_current
-        self.p_current = p_next
-        self.dp_previous = self.dp_current
-        self.dp_current = position_derivative(self.p_previous, self.p_current)
+        self.prev_p = self.curr_p
+        self.curr_p = next_p
+        self.prev_dp = self.curr_dp
+        self.curr_dp = point_direction(self.prev_p, self.curr_p)
 
-        # default to minimum progression on predicted trajectories if minimum distance is not reached
-        min_prog = distance(self.p_current, p_next) < self.sample_min_distance
+        # set the distance from current point to goal
+        [g.set_distance(self.curr_p) for g in self.goals]
 
-        # save predicted trajectories and it's derivatives for each goal as matrices
-        prediction_mats = []
-        deriv_prediction_mats = []
+        # set model trajectory and its derivative as matrices
+        [g.set_matrices(calc_mats(self.prev_p, self.prev_dp, g.pos)) for g in self.goals]
 
-        for goal in goal_positions:
-            m = prediction_model_matrices(self.p_previous, self.dp_previous, np.array([goal[0], goal[1], goal[2]]))
-            prediction_mats.append(m[0])
-            deriv_prediction_mats.append(m[1])
+        # set the progression of the current point at the trajectory path
+        if distance(self.curr_p, next_p) < self.min_dist:
+            # minimum progression
+            [g.set_progression(self.min_prog) for g in self.goals]
+        else:  # approximated progression
+            [g.set_progression(calc_ppc(self.prev_p, self.curr_p, g.pos)) for g in self.goals]
 
-        # approximate progress on trajectory and calculate the corresponding directional vector
-        predicted_path_points = []
-        deriv_at_path_points = []
-
-        for i in range(len(goal_positions)):
-
-            s = self.min_prediction_prog
-            if not min_prog:  # calculate approximated progression
-                s = calculate_path_coordinate(self.p_previous, self.p_current, goal_positions[i])
-
-            predicted_path_points.append(calculate_polynomial(prediction_mats[i], s))
-            deriv_at_path_points.append(normalize(calculate_polynomial(deriv_prediction_mats[i], s)))
-
-        # plot the trajectories with directional vectors
-        if self.activate_plotter:
-            self.animated_plots.update_data(
-                data_3d=[self.p_previous, self.p_current, self.dp_current, prediction_mats, predicted_path_points,
-                         deriv_at_path_points])
-
-        return deriv_at_path_points
+        # set angles between measured and predicted direction
+        [setattr(g, 'angle', calc_angle(g.pos, self.curr_p)) for g in self.goals]
 
 
-def position_derivative(p1, p2):
+def point_direction(p1, p2):
     """ Calculates the normalized direction vector of two points. """
-    return normalize(p2 - p1)
-
-
-def normalize(p):
-    """ Normalizes a vector. """
+    p = p2 - p1
     divisor = np.linalg.norm(p)
     return p if divisor == 0 else p / np.linalg.norm(p)
 
 
-def calculate_path_coordinate(p_previous, p_current, p_goal):
+def calc_ppc(prev_p, curr_p, goal):
     """ Calculates the normalized path coordinate as point on the trajectory.
 
-    :param p_previous: (NDArray[np.float64])    measured point at t_n-1
-    :param p_current: (NDArray[np.float64])     measured point at t_n
-    :param p_goal: (NDArray[np.float64])        position of goal
+    :param prev_p: (NDArray[np.float64])    measured point at t_n-1
+    :param curr_p: (NDArray[np.float64])    measured point at t_n
+    :param goal: (NDArray[np.float64])      position of goal
 
     :return: predicted path coordinate
     """
-    distance_a = np.linalg.norm(p_current - p_previous)
-    distance_b = np.linalg.norm(p_goal - p_current)
+    distance_a = np.linalg.norm(curr_p - prev_p)
+    distance_b = np.linalg.norm(goal - curr_p)
     return distance_a / (distance_a + distance_b)
 
 
-def calculate_polynomial(matrix, s):
-    """ Calculates the value of a polynomial at point s. """
-    x = np.polyval(matrix[0], s)
-    y = np.polyval(matrix[1], s)
-    z = np.polyval(matrix[2], s)
-
-    return np.array([x, y, z])
-
-
-def prediction_model_matrices(p_previous, dp_previous, p_goal):
+def calc_mats(prev_p, prev_dp, goal):
     """ Calculates the coefficients of the trajectory model and it's derivative.
 
-    :param p_previous: (NDArray[np.float64])      measured point at t_n-1
-    :param dp_previous: (NDArray[np.float64])     derivative of p
-    :param p_goal: (NDArray[np.float64])          position of goal
+    :param prev_p: (NDArray[np.float64])    measured point at t_n-1
+    :param prev_dp: (NDArray[np.float64])   derivative of p
+    :param goal: (NDArray[np.float64])      position of goal
 
     :return: coefficient matrix of the trajectory model, and it's derivative as a tuple
     """
 
     # parameters of cubic polynomial
-    a0 = np.array(p_previous, copy=True)
-    a1 = np.array(dp_previous, copy=True)
-    a2 = 1.5 * p_goal - 1.5 * p_previous - 1.5 * dp_previous
-    a3 = -0.5 * p_goal + 0.5 * p_previous + 0.5 * dp_previous
+    a0 = np.array(prev_p, copy=True)
+    a1 = np.array(prev_dp, copy=True)
+    a2 = 1.5 * goal - 1.5 * prev_p - 1.5 * prev_dp
+    a3 = -0.5 * goal + 0.5 * prev_p + 0.5 * prev_dp
 
     # coefficients of cubic polynom as 3x4 matrix
     prediction_mat = np.zeros((3, 4))
@@ -149,15 +110,38 @@ def prediction_model_matrices(p_previous, dp_previous, p_goal):
     for i in range(3):
         deriv_prediction_mat[i] = [3 * a3[i], 2 * a2[i], a1[i]]
 
-    '''
+    """
     # coefficients of second derivative cubic polynom 3x3 matrix
     Ma = np.zeros((3, 2))
     for i in range(3):
         Ma[i] = [6 * a3[i, 0], 2 * a2[i, 0]]
-    '''
+    """
     return prediction_mat, deriv_prediction_mat
 
 
 def distance(v1, v2):
     """ Calculates the Euclidean distance between two vectors. """
     return np.linalg.norm(v1 - v2)
+
+
+def calc_angle(v1, v2):
+    """ Calculates the angle on x,y plane between two 3D vectors. """
+
+    # remove z component
+    v1 = np.array([v1[0], v1[1]])
+    v2 = np.array([v2[0], v2[1]])
+
+    # calculate angle
+    dot = np.dot(v1, v2)
+    v1_norm = np.linalg.norm(v1)
+    v2_norm = np.linalg.norm(v2)
+
+    if np.isclose(v1_norm, 0, 0.001) or np.isclose(v2_norm, 0, 0.001):
+        return np.pi
+
+    cos_angle = dot / (v1_norm * v2_norm)
+
+    # for numerical precision
+    cos_angle = np.clip(cos_angle, -1.0, 1.0)
+
+    return np.arccos(cos_angle)  # in radiance

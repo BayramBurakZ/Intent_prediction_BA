@@ -1,5 +1,5 @@
 from unittest import TestCase
-from probability_evaluator import calculate_angle
+from probability_evaluator import calc_angle
 
 import numpy as np
 
@@ -32,4 +32,4 @@ class TestProbabilityEvaluator(TestCase):
         vector_c = [c1, c2, c3, c4, c5, c6]
 
         for i in range(len(vector_a)):
-            self.assertAlmostEqual(calculate_angle(vector_a[i], vector_b[i]), vector_c[i], 5)
+            self.assertAlmostEqual(calc_angle(vector_a[i], vector_b[i]), vector_c[i], 5)
