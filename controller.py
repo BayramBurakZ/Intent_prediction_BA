@@ -45,28 +45,37 @@ class Controller:
         """
         # TODO: catch bad data
 
-        # calculate predicted direction
-        self.prediction_model.update(data[1])
+        if len(data) > 1:
+            # calculate predicted direction
+            self.prediction_model.update(data[1])
 
-        # calculate the probability of predicted direction
-        self.probability_evaluator.update()
+            # calculate the probability of predicted direction
+            self.probability_evaluator.update()
 
         # handle action
-        if len(data) > 2:
+        if len(data) > 2:  # TODO change this
             self.action_handler.handle_action(data[2])
 
-        # TODO somewhere here bug
-        probabilities = [round(g.prob * 100, 2) for g in self.goals]
-        uncat_goal = round(max(1 - sum(probabilities), 0) * 100, 2)
+        if len(data) == 1:
+            self.action_handler.handle_action(data[0])
 
-        print("time: ", data[0], " probability: ", probabilities, " uncategorized goal: ", uncat_goal)
+        if len(data) > 1:
+            # TODO ONLY FOR TESTING
+            ids = [g.num for g in self.goals]
+            samples = [g.sq for g in self.goals]
+            probabilities = [round(g.prob * 100, 2) for g in self.goals]
+            samples = [g.sq for g in self.goals]
+            dists = [round(g.dist, 2) for g in self.goals]
+            angles = [round(g.angle, 2) for g in self.goals]
+            uncat_goal = round(max(1 - sum(probabilities), 0) * 100, 2)
 
-        """for g in self.goals:
-            g.print_stats()"""
+            print("ts:", data[0], " ids:", ids, " prob:", probabilities, " uncat:", uncat_goal, " sq:", samples,
+                  " dist:",
+                  dists, " angles:", angles)
 
-        if self.PLOTTER_ENABLED:
-            self.animated_plots.update_data([self.prediction_model.prev_p, data[1], data[0],
-                                             self.prediction_model.curr_dp, uncat_goal])
+            if self.PLOTTER_ENABLED:
+                self.animated_plots.update_data([self.prediction_model.prev_p, data[1], data[0],
+                                                 self.prediction_model.curr_dp, uncat_goal])
 
 
 def process_df(df):

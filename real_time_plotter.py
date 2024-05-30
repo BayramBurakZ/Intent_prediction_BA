@@ -45,7 +45,6 @@ class AnimatedPlots:
 
         plt.pause(0.001)
 
-
     def update_plot(self, frame):
         if self.data is None or self.counter < 3:
             return
@@ -132,7 +131,6 @@ class AnimatedPlots:
         self.ax3.figure.tight_layout()
 
         self.ax3.margins(y=0.2)
-
 
     def animate(self):
         self.ani = FuncAnimation(self.fig, self.update_plot, frames=25, interval=40, repeat=False)

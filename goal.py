@@ -73,8 +73,8 @@ class Goal:
     def normalize_probability(self, divisor):
         self.prob /= divisor
 
-    def print_stats(self):
-        print( f'num: {self.num}| prob: {self.prob}| sq: {self.sq}| angle: {self.angle}' )
+    def get_stats(self):
+        return f'num: {self.num}| prob: {self.prob}| sq: {self.sq}| angle: {self.angle}'
 
 
 def calc_poly(matrix, s):

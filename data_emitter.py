@@ -1,4 +1,4 @@
-import sys
+import os
 import time
 
 import numpy as np
@@ -6,52 +6,59 @@ import numpy as np
 
 class DataEmitter:
     # TODO: preprocess Database to csv data
-    def __init__(self, data_queue, df_trajectories, df_actions):
+    def __init__(self, data_queue, df_trajectories, df_actions, USE_DB):
 
         self.data_queue = data_queue
         self.df_trajectories = df_trajectories
         self.df_actions = df_actions
-        self.use_database = False
+        self.USE_DB = USE_DB
 
     def emit_data(self):
-        timestamps_csv = self.df_trajectories['time'].values
-        timestamps_db = self.df_actions['time'].values
-        timestamps_db = [int(element) for element in timestamps_db]
+        timestamps_traj = self.df_trajectories['time'].values.tolist()
+        timestamps_action = self.df_actions['time'].values
+        timestamps_action = [int(element) for element in timestamps_action]
 
-        time_step = 10  # 17 ~ 60hz, 100 = 10hz
-        current_time = timestamps_csv[0]
-        current_index = 0
-        db_index = 0
+        start_time, end_time = 0, 999
+        current_time = start_time
+        time_step = 1  # 17 ~ 60hz, 100 = 10hz
+        speed = 0.1  # 0.1 (fast) < 1.0 (normal) < 10.0 (slow)
 
-        # current_time = 19480
-        # current_index = (self.df_csv['time'] >= current_time).idxmax()
-        # db_index = (self.df_db['time'] >= current_time).idxmax()
+        curr_traj_index, curr_action_index = 0, 0
+        max_index1 = None
 
-        while current_index < len(timestamps_csv):
+        while current_time < end_time - time_step:
             data = []
-
-            # select next highest timestamp with simulated time
-            if current_time >= timestamps_csv[current_index]:
-                # select data
-                row = self.df_trajectories.iloc[current_index]
-                ts = int(row['time'])
-                coordinates = np.array([row['x'], row['y'], row['z']])
-
-                data.append(ts)
-                data.append(coordinates)
-                current_index += 1
-
-                if current_time >= timestamps_db[0] and self.use_database:
-                    timestamps_db.pop(0)
-                    row = self.df_actions.iloc[db_index]
-                    db_index += 1
-                    data.append(row)
-
-                self.data_queue.put(data)  # save in queue
-
             current_time += time_step
 
-            # wait for "time_step" amount of milliseconds to simulate real time
-            time.sleep(time_step * 1 / 1000)
+            # check list of trajectories
+            while curr_traj_index < len(timestamps_traj) and timestamps_traj[curr_traj_index] <= current_time:
+                max_index1 = curr_traj_index
+                curr_traj_index += 1
 
-        sys.exit("EXIT: CSV finished")
+            # skip trajectories between time steps
+            if max_index1 is not None:
+                row = self.df_trajectories.iloc[curr_traj_index]
+                ts = int(row['time'])
+                coordinates = np.array([row['x'], row['y'], row['z']])
+                data.append(ts)
+                data.append(coordinates)
+                max_index1 = None
+
+            # check list of actions
+            if self.USE_DB:
+                while curr_action_index < len(timestamps_action) and timestamps_action[
+                    curr_action_index] <= current_time:
+                    row = self.df_actions.iloc[curr_action_index]
+                    data.append(row)
+                    curr_action_index += 1
+
+            # no more data end program
+            if curr_traj_index >= len(timestamps_traj):
+                break
+
+            self.data_queue.put(data)  # save in queue
+
+            # wait for "time_step" amount of milliseconds to simulate real time
+            time.sleep(time_step * speed / 1000)
+
+        os._exit(0)

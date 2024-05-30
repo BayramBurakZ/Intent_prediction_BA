@@ -23,19 +23,20 @@ class Main:
         df_actions = pd.read_csv(path_actions)
 
         # minimum distance between samples to start calculating (in meters)
-        MIN_DIST = 0.05
-        MIN_PROG = 0.15
+        MIN_DIST = 0.01
+        MIN_PROG = 0.2
 
         # variance boundaries for normal distribution
-        MIN_VAR, MAX_VAR = 0.0625, 0.03125
-        #MIN_VAR, MAX_VAR = 0.125, 0.03125
+        # MIN_VAR, MAX_VAR = 0.0625, 0.03125
+        MIN_VAR, MAX_VAR = 0.125, 0.0625
 
         # activate real time plotter
         PLOTTER_ENABLED = False
+        USE_DB = False
 
         self.controller = Controller(df_goals, MIN_DIST, MIN_PROG, MIN_VAR, MAX_VAR, PLOTTER_ENABLED)
         self.data_queue = queue.Queue()
-        self.data_emitter = DataEmitter(self.data_queue, df_trajectories, df_actions)
+        self.data_emitter = DataEmitter(self.data_queue, df_trajectories, df_actions, USE_DB)
 
     def run(self):
 
