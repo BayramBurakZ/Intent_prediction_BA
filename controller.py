@@ -2,6 +2,7 @@ from goal import Goal
 from action_handler import ActionHandler
 from prediction_model import PredictionModel
 from probability_evaluator import ProbabilityEvaluator
+from real_time_plotter import AnimatedPlots
 
 import numpy as np
 
@@ -16,27 +17,28 @@ class Controller:
         animated_plots: (AnimatedPlots)                 instance for animating data
     """
 
-    def __init__(self, df, min_dist, min_prog, min_var, max_var, activate_plotter):
+    def __init__(self, df, MIN_DIST, MIN_PROG, MIN_VAR, MAX_VAR, PLOTTER_ENABLED):
         """ Constructor for the Controller class.
 
         :param df: (dataframe)                      dataframe with goal positions and goal id
-        :param min_dist: (float)                    minimum distance to use lower boundary
-        :param min_prog: (float)                    minimum prediction progression as lower boundary
-        :param min_var: (float)                     lower limit for variance in normal distribution
-        :param max_var: (float)                     upper limit for variance in normal distribution
-        :param activate_plotter: (bool)             activates the real time plotter
+        :param MIN_DIST: (float)                    minimum distance to use lower boundary
+        :param MIN_PROG: (float)                    minimum prediction progression as lower boundary
+        :param MIN_VAR: (float)                     lower limit for variance in normal distribution
+        :param MAX_VAR: (float)                     upper limit for variance in normal distribution
+        :param PLOTTER_ENABLED: (bool)              enables the real time plotter
         """
         goal_data = process_df(df)
         self.goals = [Goal(number, position) for number, position in goal_data]
-        self.prediction_model = PredictionModel(self.goals, min_dist, min_prog)
-        self.probability_evaluator = ProbabilityEvaluator(self.goals, min_var, max_var)
+        self.prediction_model = PredictionModel(self.goals, MIN_DIST, MIN_PROG)
+        self.probability_evaluator = ProbabilityEvaluator(self.goals, MIN_VAR, MAX_VAR)
         self.action_handler = ActionHandler(self.goals)
 
         # live visualization with real time plotter (optional) #TODO massive performance problems when plotting
-        # self.animated_plots = AnimatedPlots(self.goals_position)
+        self.animated_plots = AnimatedPlots()
+        self.PLOTTER_ENABLED = PLOTTER_ENABLED
 
-        """if activate_plotter:
-            self.animated_plots.animate()"""
+        if PLOTTER_ENABLED:
+            self.animated_plots.animate()
 
     def process_data(self, data):
         """ Distributes incoming data. Data contains [0]-> time, [1]-> hand wrist position
@@ -56,9 +58,13 @@ class Controller:
         if len(data) > 2:
             self.action_handler.handle_action(data[2])
 
+        # TODO somewhere here bug
         probabilities = [round(g.prob_total*100, 2) for g in self.goals]
         uncat_goal = round(max(1 - sum(probabilities), 0) * 100, 2)
         print("time: ", data[0], " probability: ", probabilities, " uncategorized goal: ", uncat_goal)
+
+        if self.PLOTTER_ENABLED:
+            self.animated_plots.update_data([self.goals, ])
 
 
 def process_df(df):
@@ -69,3 +75,4 @@ def process_df(df):
 
     assert len(data) > 0, "the list of goal can not be empty"
     return data
+

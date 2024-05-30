@@ -11,25 +11,31 @@ from data_emitter import DataEmitter
 class Main:
     def __init__(self):
         # all goal positions and ids are saved in csv->(ID, x, y, z)
-        path = r'data/goals/goals_test1.csv'
-        df = pd.read_csv(path)
+        path_goals = r'data/goals/goals_test1.csv'
+        df_goals = pd.read_csv(path_goals)
 
+        # CSV with timestamp and coordinates of hand wrist
+        path_trajectories = r'data/test_trajectories/test3.csv'
+        df_trajectories = pd.read_csv(path_trajectories)
+
+        # CSV with actions from database
+        path_actions = r'data/db_actions/action_31612_0.csv'
+        df_actions = pd.read_csv(path_actions)
 
         # minimum distance between samples to start calculating (in meters)
-        sample_min_distance = 0.05
-        min_predicted_prog = 0.15
+        MIN_DIST = 0.05
+        MIN_PROG = 0.15
 
-        # boundaries for normal distribution
-        min_variance, max_variance = 0.0625, 0.03125
-        #min_variance, max_variance = 0.125, 0.03125
+        # variance boundaries for normal distribution
+        #MIN_VAR, MAX_VAR = 0.0625, 0.03125
+        MIN_VAR, MAX_VAR = 0.125, 0.03125
 
         # activate real time plotter
-        activate_plotter = False
+        PLOTTER_ENABLED = False
 
-        self.controller = Controller(df, sample_min_distance, min_variance, max_variance,
-                                     activate_plotter, min_predicted_prog)
+        self.controller = Controller(df_goals, MIN_DIST, MIN_PROG, MIN_VAR, MAX_VAR, PLOTTER_ENABLED)
         self.data_queue = queue.Queue()
-        self.data_emitter = DataEmitter(self.data_queue)
+        self.data_emitter = DataEmitter(self.data_queue, df_trajectories, df_actions)
 
     def run(self):
 
