@@ -47,10 +47,11 @@ class Goal:
         self.mat = mat[0]
         self.dmat = mat[1]
 
-    def set_progression(self, s):
-        """ :param s: (float)   predicted point along the trajectory """
-        self.ppt = calc_poly(self.mat, s)
-        self.dppt = calc_poly(self.dmat, s)
+    def set_progression(self, progression):
+        """ :param progression: (float)     progression along the trajectory """
+
+        self.ppt = calc_poly(self.mat, progression)
+        self.dppt = calc_poly(self.dmat, progression)
 
     def update_probability(self, prob_last):
         """ :param prob_last: (float)   probability of last measured angle """

@@ -30,7 +30,7 @@ class PredictionModel:
         :param next_p: (NDArray[np.float64])    last measured point of the hand wrist
         """
 
-        # wait for first three measurements to start calculating
+        # calculating starts after third measurement
         if self.prev_p is None:
             self.prev_p = next_p
             return
@@ -38,6 +38,10 @@ class PredictionModel:
         if self.curr_p is None:
             self.curr_p = next_p
             self.curr_dp = point_direction(self.prev_p, self.curr_p)
+            return
+
+        # calculating starts after minimum distance between measurements is reached
+        if distance(self.curr_p, next_p) < self.min_dist:
             return
 
         # shift coordinates, timestamps and derivative
@@ -53,11 +57,7 @@ class PredictionModel:
         [g.set_matrices(calc_mats(self.prev_p, self.prev_dp, g.pos)) for g in self.goals]
 
         # set the progression of the current point at the trajectory path
-        if distance(self.curr_p, next_p) < self.min_dist:
-            # minimum progression
-            [g.set_progression(self.min_prog) for g in self.goals]
-        else:  # approximated progression
-            [g.set_progression(calc_ppc(self.prev_p, self.curr_p, g.pos)) for g in self.goals]
+        [g.set_progression(max(calc_progression(self.prev_p, self.curr_p, g.pos), self.min_prog)) for g in self.goals]
 
         # set angles between measured and predicted direction
         [setattr(g, 'angle', calc_angle(g.dppt, self.curr_dp)) for g in self.goals]
@@ -70,7 +70,7 @@ def point_direction(p1, p2):
     return p if divisor == 0 else p / np.linalg.norm(p)
 
 
-def calc_ppc(prev_p, curr_p, goal):
+def calc_progression(prev_p, curr_p, goal):
     """ Calculates the normalized path coordinate as point on the trajectory.
 
     :param prev_p: (NDArray[np.float64])    measured point at t_n-1

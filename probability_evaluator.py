@@ -7,7 +7,7 @@ class ProbabilityEvaluator:
 
     def __init__(self, goals, min_variance, max_variance):
         """
-        :param goals: (List)                    List of goal instances
+        :param goals: (list)                    List of goal instances
         :param min_variance: (float)            lower limit for variance in normal distribution
         :param max_variance: (float)            upper limit for variance in normal distribution
         """

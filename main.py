@@ -9,17 +9,17 @@ from data_emitter import DataEmitter
 
 
 class Main:
-    def __init__(self, path_goals, path_trajectories, path_actions=r'data/db_actions/action_empty.csv'):
+    def __init__(self, path_goals, path_trajectories, path_actions=r'data/db_actions/action_empty.csv',
+                 rt_result=False):
+
         # minimum distance between samples to start calculating (in meters)
-        MIN_DIST = 0.04
+        MIN_DIST = 0.03 # in meters
         MIN_PROG = 0.2
 
         # variance boundaries for normal distribution
-        # MIN_VAR, MAX_VAR = 0.0625, 0.03125
-        MIN_VAR, MAX_VAR = 0.125, 0.0625
+        MIN_VAR, MAX_VAR = 0.0625, 0.125  # (1/16), (1/8)
 
-        # activate real time plotter
-        PLOTTER_ENABLED = False
+        # use database of study
         USE_DB = False
 
         # all goal positions and ids are saved in csv->(ID, x, y, z)
@@ -31,9 +31,10 @@ class Main:
         # CSV with actions from database
         df_actions = pd.read_csv(path_actions) if USE_DB else None
 
-        self.controller = Controller(df_goals, MIN_DIST, MIN_PROG, MIN_VAR, MAX_VAR, PLOTTER_ENABLED)
+        self.rt_result = rt_result
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue, df_trajectories, df_actions, USE_DB)
+        self.controller = Controller(df_goals, MIN_DIST, MIN_PROG, MIN_VAR, MAX_VAR)
 
     def run(self):
 
@@ -45,12 +46,17 @@ class Main:
         while True:
             try:
                 data = self.data_queue.get()
-                if data == -1:
-                    break
-                temp = self.controller.process_data(data)
 
-                if temp is not None:
-                    results.append(temp)
+                if data == -1:  # stop when no more data
+                    break
+
+                result = self.controller.process_data(data)
+
+                if result is not None:
+                    results.append(result)
+
+                    if self.rt_result:
+                        print(result)  # time, ids, probabilities, samples, distances, angles, uncategorized
 
             except queue.Empty:
                 print("wait for data...")
@@ -58,15 +64,16 @@ class Main:
 
         return results
 
+
 if __name__ == "__main__":
     # all goal positions and ids are saved in csv->(ID, x, y, z)
-    path_goals = r'data/test_data/test_goal/2_1.csv'
+    path_goals = r'data/test_data/test_goal/3_6.csv'
 
     # CSV with timestamp and coordinates of hand wrist
-    path_trajectories = r'data/test_data/test_trajectory/start_middle/traj_gentle_g2_1_target_1.csv'
+    path_trajectories = r'data/test_data/test_trajectory/3_6_1_11.csv'
 
     # CSV with actions from database
     path_actions = r'data/study/db_actions/action_31612_0.csv'
 
-    main = Main(path_goals, path_trajectories, path_actions)
-    main.run()
+    main = Main(path_goals, path_trajectories, path_actions, True)
+    results = main.run()
