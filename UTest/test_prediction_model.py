@@ -1,35 +1,54 @@
-from unittest import TestCase
+import unittest
 
-from prediction_model import calc_angle
 import numpy as np
 
-class Test(TestCase):
+from prediction_model import calc_angle
+
+
+class TestCalcAngle(unittest.TestCase):
+
+    def setUp(self):
+        self.vector_a = [
+            np.array([1, 0, 1]),
+            np.array([1, 0, 1]),
+            np.array([0, 1, 1]),
+            np.array([1, 1, 1]),
+
+            np.array([1, 1, 1]),
+            np.array([1, 0, 0]),
+            np.array([2, 3, 4]),
+            np.array([3, 5, -1]),
+        ]
+        self.vector_b = [
+            np.array([0, 1, 1]),
+            np.array([1, 0, 1]),
+            np.array([0, -1, 1]),
+            np.array([-1, -1, 1]),
+
+            np.array([1, -1, 1]),
+            np.array([-1, 0, 0]),
+            np.array([1, -2, 1]),
+            np.array([-3, 2, 0]),
+        ]
+        self.vector_c = [
+            np.pi / 2,  # 90 degrees
+            0,  # 0 degrees
+            np.pi,  # 180 degrees
+            np.pi,  # 180 degrees
+
+            np.pi / 2,  # 90 degrees
+            np.pi,  # 180 degrees
+            2.08994244104142,  # 119.744881296942224 degrees
+            1.523213223517913  # 87.273689006093735 degrees
+        ]
+
     def test_calc_angle(self):
+        for i in range(len(self.vector_a)):
+            with self.subTest(i=i):
+                calculated_angle = calc_angle(self.vector_a[i], self.vector_b[i])
+                print(f"Test case {i}: Expected angle {self.vector_c[i]}, Calculated angle {calculated_angle}")
+                self.assertAlmostEqual(calculated_angle, self.vector_c[i], places=5)
 
-        a1 = np.array([1, 0, 1])
-        a2 = np.array([1, 0, 1])
-        a3 = np.array([0, 1, 1])
-        a4 = np.array([1, 1, 1])
-        a5 = np.array([1, 1, 1])
-        a6 = np.array([1, 0, 0])
 
-        b1 = np.array([0, 1, 1])
-        b2 = np.array([1, 0, 1])
-        b3 = np.array([0, -1, 1])
-        b4 = np.array([-1, -1, 1])
-        b5 = np.array([1, -1, 1])
-        b6 = np.array([-1, 0, 0])
-
-        c1 = np.pi / 2
-        c2 = 0
-        c3 = np.pi
-        c4 = np.pi
-        c5 = np.pi / 2
-        c6 = np.pi
-
-        vector_a = [a1, a2, a3, a4, a5, a6]
-        vector_b = [b1, b2, b3, b4, b5, b6]
-        vector_c = [c1, c2, c3, c4, c5, c6]
-
-        for i in range(len(vector_a)):
-            self.assertAlmostEqual(calc_angle(vector_a[i], vector_b[i]), vector_c[i], 5)
+if __name__ == '__main__':
+    unittest.main()

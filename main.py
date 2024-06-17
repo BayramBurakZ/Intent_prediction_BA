@@ -13,7 +13,7 @@ class Main:
                  rt_result=False):
 
         # minimum distance between samples to start calculating (in meters)
-        MIN_DIST = 0.03 # in meters
+        MIN_DIST = 0.01 # in meters
         MIN_PROG = 0.2
 
         # variance boundaries for normal distribution

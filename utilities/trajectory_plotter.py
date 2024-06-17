@@ -31,11 +31,11 @@ def plot_trajectory_from_csv(csv_file):
     plt.show()
 
 
-path1 = r'../data/test_data/test_trajectory/start_middle/traj_linear_g1_5_target_1.csv'
-path2 = r'../data/test_data/test_trajectory/start_middle/traj_gentle_g1_5_target_1.csv'
-path3 = r'../data/test_data/test_trajectory/start_middle/traj_moderate_g1_5_target_1.csv'
-path4 = r'../data/test_data/test_trajectory/start_middle/traj_sharp_g1_5_target_1.csv'
-path5 = r'../data/test_data/test_trajectory/start_middle/traj_max_g1_5_target_1.csv'
+path1 = r'../data/test_data/test_trajectory/1_3_1_20.csv'
+path2 = r'../data/test_data/test_trajectory/2_5_1_20.csv'
+path3 = r'../data/test_data/test_trajectory/3_7_1_20.csv'
+path4 = r'../data/test_data/test_trajectory/4_3_1_11.csv'
+path5 = r'../data/test_data/test_trajectory/4_3_1_02.csv'
 
 plot_trajectory_from_csv(path1)
 plot_trajectory_from_csv(path2)

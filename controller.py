@@ -50,8 +50,6 @@ class Controller:
         # calculate the probability of predicted direction
         self.probability_evaluator.update()
 
-
-        # TODO: reconsider this
         ids = [g.num for g in self.goals]
         probabilities = [round(g.prob * 100, 2) for g in self.goals]
         samples = [g.sq for g in self.goals]

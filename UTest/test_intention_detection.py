@@ -1,10 +1,9 @@
-import os
 import logging
-from main import Main
-import colorama
+import os
+
 from colorama import Fore, Style
 
-colorama.init(autoreset=True)  # Initialize colorama for colored output
+from main import Main
 
 
 class TestIntentionRecognition:
@@ -15,23 +14,26 @@ class TestIntentionRecognition:
         self.logger = None
 
     def find_trajectories_for_goal(self, goal_prefix):
-        trajectories = []
-        for file_name in os.listdir(self.trajectories_folder):
-            if file_name.startswith(goal_prefix):
-                trajectories.append(os.path.join(self.trajectories_folder, file_name))
-        return trajectories
+        return [
+            os.path.join(self.trajectories_folder, file_name)
+            for file_name in os.listdir(self.trajectories_folder)
+            if file_name.startswith(goal_prefix)
+        ]
 
     def run_test(self):
+        # iterate through all goals
         for goal_file in os.listdir(self.goals_folder):
-            goal_prefix = os.path.splitext(goal_file)[0]  # Get the goal prefix
-            goal_path = os.path.join(self.goals_folder, goal_file).replace("\\", "/")
+            goal_prefix = os.path.splitext(goal_file)[0]
+            goal_path = os.path.join(self.goals_folder, goal_file)
             trajectories = self.find_trajectories_for_goal(goal_prefix)
 
             if trajectories:
                 log_file = os.path.join(self.logs_folder, f"{goal_prefix}_results.log")
                 self.setup_logging(log_file)
+
+                # iterate through all trajectories for each goal
                 for trajectory_path in trajectories:
-                    self.run_individual_test(goal_path, trajectory_path.replace("\\", "/"))
+                    self.run_individual_test(goal_path, trajectory_path)
             else:
                 print(f"No trajectories found for goal {goal_file}")
 
@@ -47,6 +49,7 @@ class TestIntentionRecognition:
         goal_ids, probabilities_other, sample_sizes = [], [], []
 
         for result in results:
+            # unpack the results
             timestamps.append(result[0])
             goal_ids.append(result[1])
             probabilities_target.append(result[2].pop(target))
@@ -55,32 +58,29 @@ class TestIntentionRecognition:
             distances.append(result[4])
             uncategorized.append(result[6])
 
-        highest_probability, prob_60_reached = 0.0, False
-        distance_60, sample_size_60, time_60 = None, None, None
-        target_counter, other_counter = 0, 0
+        highest_probability = max(probabilities_target, default=0.0)
+        prob_60_reached = False
+        distance_60 = sample_size_60 = time_60 = None
+        target_counter = other_counter = 0
 
         for i, prob in enumerate(probabilities_target):
+            # check for each measurement if the target or another goal had the highest probability
             if (probabilities_other[i] and max(probabilities_other[i]) > prob) or uncategorized[i] > prob:
                 other_counter += 1
             else:
                 target_counter += 1
 
+            # passing conditions
             if prob >= 60.0 and not prob_60_reached and sample_sizes[i][target] >= 3:
                 prob_60_reached = True
                 distance_60 = distances[i][target]
                 sample_size_60 = sample_sizes[i][target]
                 time_60 = timestamps[i]
 
-            if prob > highest_probability:
-                highest_probability = prob
+        # Determine status and color
+        status, color = determine_status(prob_60_reached, distance_60, target_counter, other_counter)
 
-        distance_limit = 0.2
-
-        if prob_60_reached and distance_60 >= distance_limit:
-            status, color = ("Success", Fore.GREEN) if target_counter >= other_counter else ("Pass", Fore.YELLOW)
-        else:
-            status, color = "Failed", Fore.RED
-
+        # Log the result
         self.log_result(trajectory_file, highest_probability, time_60, sample_size_60, distance_60, status, color)
 
     def log_result(self, trajectory_file, highest_probability, time_60, sample_size_60, distance_60, status, color):
@@ -95,13 +95,10 @@ class TestIntentionRecognition:
     def setup_logging(self, log_file):
         self.logger = logging.getLogger(log_file)
         self.logger.setLevel(logging.INFO)
+        self.logger.handlers.clear()  # prevent duplicate logging
 
-        # Clear previous handlers
-        if self.logger.hasHandlers():
-            self.logger.handlers.clear()
-
-        file_handler = logging.FileHandler(log_file, mode='w')
-        formatter = logging.Formatter('%(message)s')
+        file_handler = logging.FileHandler(log_file, mode='w')  # overwrite existing logs
+        formatter = logging.Formatter('%(message)s')  # only message display
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
@@ -110,11 +107,34 @@ def get_filename_without_extension(path):
     return os.path.splitext(os.path.basename(path))[0]
 
 
+def determine_status(prob_60_reached, distance_60, target_counter, other_counter, distance_limit=0.0):
+    """
+    Determine the status and color based on probability and distance criteria.
+
+    :param prob_60_reached: (bool)      Whether the 60% probability threshold was reached.
+    :param distance_60: (float)         The distance when the 60% probability was reached.
+    :param target_counter: (int)        The count of times the target was preferred.
+    :param other_counter: (int)         The count of times another option was preferred.
+    :param distance_limit: (float)      The minimum distance limit.
+
+    :return: (status: str, color: str)  The determined status and corresponding color.
+    """
+    if prob_60_reached and distance_60 >= distance_limit:
+        if target_counter >= other_counter:
+            return "Success", Fore.GREEN
+        else:
+            return "Pass1", Fore.YELLOW
+    else:
+        if target_counter >= other_counter:
+            return "Pass2", Fore.BLUE
+        else:
+            return "Fail", Fore.RED
+
+
 if __name__ == "__main__":
-    # Specify the directories for goals, trajectories, and test_logs
     goals_folder = r'../data/test_data/test_goal'
     trajectories_folder = r'../data/test_data/test_trajectory'
-    logs_folder = r'../data/test_data/test_logs'
+    logs_folder = r'../data/test_data/result_logs'
 
     test = TestIntentionRecognition(goals_folder, trajectories_folder, logs_folder)
     test.run_test()

@@ -6,7 +6,7 @@ class Goal:
 
     Attributes:
         num: (int)                      id of goal
-        pos: (NDArray[np.float64]       coordinates of goal
+        pos: (NDArray[np.float64])      coordinates of goal
 
         active: (bool)                  status of goal
         dist: (float)                   distance to last measured hand wrist

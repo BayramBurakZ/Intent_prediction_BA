@@ -24,11 +24,13 @@ class ProbabilityEvaluator:
         sd_of_angles = calc_sd(angles, self.min_variance, self.max_variance)
 
         # update probability with normal PDF of angle
-        [g.update_probability(stats.norm.pdf(g.angle, 0, sd_of_angles)) for g in self.goals]
+        for g in self.goals:
+            g.update_probability(stats.norm.pdf(g.angle, 0, sd_of_angles))
 
         # normalize probability of goals
         norm_divisor = max(1, sum(g.prob for g in self.goals))
-        [g.normalize_probability(norm_divisor) for g in self.goals]
+        for g in self.goals:
+            g.normalize_probability(norm_divisor)
 
 
 def calc_sd(angles, min_variance, max_variance):

@@ -50,17 +50,18 @@ class PredictionModel:
         self.prev_dp = self.curr_dp
         self.curr_dp = point_direction(self.prev_p, self.curr_p)
 
-        # set the distance from current point to goal
-        [g.set_distance(self.curr_p) for g in self.goals]
+        for g in self.goals:
+            # Set the distance from current point to goal
+            g.set_distance(self.curr_p)
 
-        # set model trajectory and its derivative as matrices
-        [g.set_matrices(calc_mats(self.prev_p, self.prev_dp, g.pos)) for g in self.goals]
+            # Set model trajectory and its derivative as matrices
+            g.set_matrices(calc_mats(self.prev_p, self.prev_dp, g.pos))
 
-        # set the progression of the current point at the trajectory path
-        [g.set_progression(max(calc_progression(self.prev_p, self.curr_p, g.pos), self.min_prog)) for g in self.goals]
+            # Set the progression of the current point at the trajectory path
+            g.set_progression(max(calc_progression(self.prev_p, self.curr_p, g.pos), self.min_prog))
 
-        # set angles between measured and predicted direction
-        [setattr(g, 'angle', calc_angle(g.dppt, self.curr_dp)) for g in self.goals]
+            # Set angles between measured and predicted direction
+            g.angle = calc_angle(g.dppt, self.curr_dp)
 
 
 def point_direction(p1, p2):
@@ -127,21 +128,11 @@ def distance(v1, v2):
 def calc_angle(v1, v2):
     """ Calculates the angle on x,y plane between two 3D vectors. """
 
-    # remove z component
-    v1 = np.array([v1[0], v1[1]])
-    v2 = np.array([v2[0], v2[1]])
+    # Project vectors onto the x-y plane by ignoring z component
+    v1_xy = np.array([v1[0], v1[1]])
+    v2_xy = np.array([v2[0], v2[1]])
 
-    # calculate angle
-    dot = np.dot(v1, v2)
-    v1_norm = np.linalg.norm(v1)
-    v2_norm = np.linalg.norm(v2)
+    # Calculate the angle using atan2
+    angle = np.arctan2(np.linalg.det([v1_xy, v2_xy]), np.dot(v1_xy, v2_xy))
 
-    if np.isclose(v1_norm, 0, 0.001) or np.isclose(v2_norm, 0, 0.001):
-        return np.pi
-
-    cos_angle = dot / (v1_norm * v2_norm)
-
-    # for numerical precision
-    cos_angle = np.clip(cos_angle, -1.0, 1.0)
-
-    return np.arccos(cos_angle)  # in radiance
+    return abs(angle)

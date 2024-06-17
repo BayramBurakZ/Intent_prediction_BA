@@ -4,6 +4,7 @@ import numpy as np
 
 class DataEmitter:
     """ A class that represents a data emitter """
+
     def __init__(self, data_queue, df_trajectories, df_actions, use_db):
         """
         :param data_queue: (queue)              the data queue
@@ -22,63 +23,49 @@ class DataEmitter:
         """
         # data to be used
         timestamps_traj = self.df_trajectories['time'].values.tolist()
-        if self.use_db:
-            timestamps_action = self.df_actions['time'].values
-            timestamps_action = [int(element) for element in timestamps_action]
+        timestamps_action = self.df_actions['time'].values.tolist() if self.use_db else []
 
         # parameters for real time emitting
         start_time, end_time = 0, 50000
-        current_time = start_time
+        curr_time = start_time
         time_step = 100  # 17 ~ 60hz, 100 = 10hz
         speed = 0.001  # 0.1 (fast) < 1.0 (normal) < 10.0 (slow)
 
         curr_traj_index, curr_action_index = 0, 0
-        max_index = None
 
         # emit data until end of data or end time is reached
-        while current_time < end_time - time_step and curr_traj_index < len(timestamps_traj):
+        while curr_time < end_time - time_step and curr_traj_index < len(timestamps_traj):
             data = []
-            current_time += time_step
+            curr_time += time_step
 
             # find the closest trajectory index to current time (can skip rows)
-            for index, timestamp in enumerate(timestamps_traj[curr_traj_index:], start=curr_traj_index):
-                if timestamp > current_time:
-                    break
-                max_index = index
-                curr_traj_index = index + 1
+            while curr_traj_index < len(timestamps_traj) and timestamps_traj[curr_traj_index] <= curr_time:
+                curr_traj_index += 1
 
-            if max_index is None:
-                break
+            row = self.df_trajectories.iloc[curr_traj_index - 1]
 
-            row = self.df_trajectories.iloc[max_index]
-            ts = int(row['time'])
+            timestamp = int(row['time'])
+            data.append(timestamp)
 
-            #coordinates = np.array([row['x'], row['y'], row['z']])
-            coordinates = np.array([add_noise() + row['x'], add_noise() + row['y'], add_noise() + row['z']])
-
-            data.append(ts)
+            coordinates = np.array([row['x'], row['y'], row['z']]) + add_noise(size=3)
             data.append(coordinates)
-            max_index = None
 
             # check list of actions without skipping rows
             if self.use_db:
-                for index, timestamp in enumerate(timestamps_action[curr_action_index:], start=curr_action_index):
-                    if timestamp > current_time:
-                        break
-                    row = self.df_actions.iloc[index]
-                    data.append(row)
-                    curr_action_index = index + 1
+                while curr_action_index < len(timestamps_action) and timestamps_action[curr_action_index] <= curr_time:
+                    action_row = self.df_actions.iloc[curr_action_index]
+                    data.append(action_row)
+                    curr_action_index += 1
 
             self.data_queue.put(data)  # save in queue
 
-            # wait for "time_step" amount of milliseconds to simulate real time
+            # wait for certain amount of milliseconds to simulate real time
             time.sleep(time_step * speed / 1000)
 
         self.data_queue.put(-1)
-        # os._exit(0)
 
 
-def add_noise(mean=0, std_dev=0.01):
+def add_noise(mean=0.0, std_dev=0.01, size=1):
     """ Adds Gaussian noise to the input values.
     The global root-mean-square error with wearable sensors and tracking cameras (like Hololens 2)
     is ranged around 0.01 (with correction techniques) to 0.0375 (without correction techniques) according to
@@ -86,7 +73,8 @@ def add_noise(mean=0, std_dev=0.01):
 
     :param mean:        mean of the Gaussian noise in meters.
     :param std_dev:     standard deviation of the Gaussian noise in meters.
+    :param size:        number of noise values to generate.
 
     :return:            The generated noise.
     """
-    return np.random.normal(mean, std_dev)
+    return np.random.normal(mean, std_dev, size)
