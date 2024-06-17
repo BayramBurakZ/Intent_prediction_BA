@@ -1,4 +1,5 @@
 import time
+
 import numpy as np
 
 
@@ -7,19 +8,22 @@ class DataEmitter:
 
     def __init__(self, data_queue, df_trajectories, df_actions, use_db):
         """
-        :param data_queue: (queue)              the data queue
-        :param df_trajectories: (dataframe)     the trajectories
-        :param df_actions: (dataframe)          the actions
-        :param use_db: (bool)                   turn on or off the database
+        Parameters:
+            data_queue (queue.Queue): The queue that stores the data to be processed.
+            df_trajectories (pandas.DataFrame): DataFrame containing trajectory data.
+            df_actions (pandas.DataFrame): DataFrame containing action data.
+            use_db (bool): Boolean flag to enable or disable the use of the database.
         """
+
         self.data_queue = data_queue
         self.df_trajectories = df_trajectories
         self.df_actions = df_actions
         self.use_db = use_db
 
     def emit_data(self):
-        """ Streams data from dataframes at specified intervals to simulate real-time measurements
-        or to quickly process data for testing purposes.
+        """
+        Streams data from DataFrames at specified intervals to simulate real-time measurements or to quickly process
+        data for testing purposes.
         """
         # data to be used
         timestamps_traj = self.df_trajectories['time'].values.tolist()
@@ -66,15 +70,20 @@ class DataEmitter:
 
 
 def add_noise(mean=0.0, std_dev=0.01, size=1):
-    """ Adds Gaussian noise to the input values.
-    The global root-mean-square error with wearable sensors and tracking cameras (like Hololens 2)
-    is ranged around 0.01 (with correction techniques) to 0.0375 (without correction techniques) according to
-    [Contreras-González et al., 2020] and [Soares et al., 2021]
-
-    :param mean:        mean of the Gaussian noise in meters.
-    :param std_dev:     standard deviation of the Gaussian noise in meters.
-    :param size:        number of noise values to generate.
-
-    :return:            The generated noise.
     """
+    Adds Gaussian noise to the input values.
+
+    The global root-mean-square error with wearable sensors and tracking cameras (such as Hololens 2) ranges from
+    0.01 meters (with correction techniques) to 0.0375 meters (without correction techniques), according to
+    Contreras-González et al., 2020 and Soares et al., 2021.
+
+    Parameters:
+        mean (float): The mean of the Gaussian noise in meters.
+        std_dev (float): The standard deviation of the Gaussian noise in meters.
+        size (int): The number of noise values to generate.
+
+    Returns:
+        numpy.ndarray: The generated Gaussian noise values.
+    """
+
     return np.random.normal(mean, std_dev, size)

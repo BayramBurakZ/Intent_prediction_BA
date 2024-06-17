@@ -3,25 +3,30 @@ from scipy import stats
 
 
 class ProbabilityEvaluator:
-    """ A class that evaluates the probability of each goal."""
+    """
+    A class that evaluates the probability of each goal.
+    """
 
-    def __init__(self, goals, min_variance, max_variance):
+    def __init__(self, goals, VARIANCE_BOUNDS):
         """
-        :param goals: (list)                    List of goal instances
-        :param min_variance: (float)            lower limit for variance in normal distribution
-        :param max_variance: (float)            upper limit for variance in normal distribution
+        Parameters:
+            goals (list[Goals]): A list of instances of the Goals class.
+            VARIANCE_BOUNDS (tuple): A tuple specifying the lower and upper limits for variance in the normal distribution.
         """
+
         self.goals = goals
-        self.min_variance = min_variance
-        self.max_variance = max_variance
+        self.MIN_VARIANCE = VARIANCE_BOUNDS[0]
+        self.MAX_VARIANCE = VARIANCE_BOUNDS[1]
 
     def update(self):
-        """ Calculates the probability of goals by evaluating predicted angles."""
+        """
+        Calculates the probability of goals by evaluating predicted angles.
+        """
 
         angles = [g.angle for g in self.goals]
 
         # calculates standard deviation of all angles
-        sd_of_angles = calc_sd(angles, self.min_variance, self.max_variance)
+        sd_of_angles = calc_sd(angles, self.MIN_VARIANCE, self.MAX_VARIANCE)
 
         # update probability with normal PDF of angle
         for g in self.goals:
@@ -34,14 +39,18 @@ class ProbabilityEvaluator:
 
 
 def calc_sd(angles, min_variance, max_variance):
-    """ Calculates the standard deviation of angles.
-
-    :param angles: (list)           angles of predicted direction vector
-    :param min_variance: (float)    lower limit for variance in normal distribution
-    :param max_variance: (float)    upper limit for variance in normal distribution
-
-    :return: (float)    standard deviation between angles
     """
+    Calculates the standard deviation of angles.
+
+    Parameters:
+        angles (list): List of angles of between measured direction vector and the predicted direction vectors.
+        min_variance (float): The lower limit for variance in the normal distribution.
+        max_variance (float): The upper limit for variance in the normal distribution.
+
+    Returns:
+        float: The standard deviation between the angles.
+    """
+
     sigma = np.std(angles)
 
     # boundaries for standard deviation

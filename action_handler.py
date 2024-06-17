@@ -2,13 +2,26 @@ class ActionHandler:
     """ A class that handles actions. """
 
     def __init__(self, goals):
-        """ :param goals: (List)    List of goal instances """
+        """
+        Parameters:
+            goals (list): A list of goal instances.
+        """
+
         self.goals = goals
 
     def handle_action(self, action):
-        """ Updates all goals and handles actions from database. columns: time, hand, action_id, other_actions
-        :param action: (dataframe)  actions from database
         """
+        Updates all goals and handles actions from the database.
+
+        Parameters:
+            action (list[pandas.DataFrame]): A list of DataFrames containing multiple actions from the database.
+            Each DataFrame includes the following columns:
+                - time
+                - hand
+                - action_id
+                - other_actions
+        """
+
         # handle actions from db
         action_tuple = (parse_action_string_to_tuples(action['action_id']))[0]
 
@@ -33,13 +46,19 @@ class ActionHandler:
 
 
 def parse_action_string_to_tuples(action_string):
-    """ Splits the action string from database into tuples with action being either pick or place.
-    observed action: "action_goalID_tokenID"
-    other actions: "action_goalID_TokenID,pick_goalID_TokenID,..."
-
-    :param action_string: (str)     action string
-    :return: (tuple)                a tuple with action and goal id
     """
+    Splits the action string from the database into tuples, with actions being either 'pick' or 'place'.
+
+    The observed action format is "action_goalID_tokenID".
+    Other actions format is "action_goalID_TokenID,pick_goalID_TokenID,...".
+
+    Parameters:
+        action_string (str): The action string.
+
+    Returns:
+        tuple: A tuple containing the action and goal ID.
+    """
+
     components = action_string.split(',')
     result = []
 

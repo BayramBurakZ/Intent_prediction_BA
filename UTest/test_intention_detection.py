@@ -109,16 +109,24 @@ def get_filename_without_extension(path):
 
 def determine_status(prob_60_reached, distance_60, target_counter, other_counter, distance_limit=0.0):
     """
-    Determine the status and color based on probability and distance criteria.
+    Determine the status and color based on the following criteria:
+        - "Success" (Green): 60% threshold reached, above distance limit, and overall preferred target.
+        - "Pass1" (Yellow): 60% threshold reached, above distance limit, but not overall preferred target.
+        - "Pass2" (Blue): 60% threshold not reached or under distance limit, but overall preferred target.
+        - "Fail" (Red): 60% threshold not reached or under distance limit, and not overall preferred target.
 
-    :param prob_60_reached: (bool)      Whether the 60% probability threshold was reached.
-    :param distance_60: (float)         The distance when the 60% probability was reached.
-    :param target_counter: (int)        The count of times the target was preferred.
-    :param other_counter: (int)         The count of times another option was preferred.
-    :param distance_limit: (float)      The minimum distance limit.
+    Parameters:
+        prob_60_reached (bool): Indicates whether the 60% probability threshold was reached.
+        distance_60 (float): The distance when the 60% probability was reached.
+        target_counter (int): The count of times the target was preferred.
+        other_counter (int): The count of times another option was preferred.
+        distance_limit (float): The minimum distance limit.
 
-    :return: (status: str, color: str)  The determined status and corresponding color.
+    Returns:
+        tuple: A tuple containing the determined status (str) and corresponding color (str).
     """
+
+
     if prob_60_reached and distance_60 >= distance_limit:
         if target_counter >= other_counter:
             return "Success", Fore.GREEN

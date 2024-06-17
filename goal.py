@@ -2,23 +2,24 @@ import numpy as np
 
 
 class Goal:
-    """ A class that represents a goal.
+    """
+    A class that represents a goal.
 
     Attributes:
-        num: (int)                      id of goal
-        pos: (NDArray[np.float64])      coordinates of goal
+        num (int): The ID of the goal.
+        pos (numpy.ndarray): The coordinates of the goal.
 
-        active: (bool)                  status of goal
-        dist: (float)                   distance to last measured hand wrist
-        prev_dist: (float)              distance to previous measured hand wrist
-        mat: (NDArray[np.float64])      trajectory to goal as matrix
-        dmat: (NDArray[np.float64])     derivative of trajectory matrix
-        ppt: (NDArray[np.float64])      predicted point on the trajectory
-        dppt: (NDArray[np.float64])     derivative at predicted point
+        active (bool): The status of the goal (active or inactive).
+        dist (float): The distance to the last measured hand wrist position.
+        prev_dist (float): The distance to the previous measured hand wrist position.
+        mat (numpy.ndarray): The trajectory to the goal as a matrix.
+        dmat (numpy.ndarray): The derivative of the trajectory matrix.
+        ppt (numpy.ndarray): The predicted point on the trajectory.
+        dppt (numpy.ndarray): The derivative at the predicted point.
 
-        angle: (float)                  angle between last measured and predicted direction
-        prob: (float)                   accumulated probability of samples
-        sq: (int)                       sample quantity
+        angle (float): The angle between the last measured direction and the predicted direction.
+        prob (float): The accumulated probability of samples.
+        sq (int): The sample quantity.
     """
 
     def __init__(self, number, position):
@@ -48,13 +49,19 @@ class Goal:
         self.dmat = mat[1]
 
     def set_progression(self, progression):
-        """ :param progression: (float)     progression along the trajectory """
+        """
+        Parameters:
+            progression (float): The progression along the trajectory.
+        """
 
         self.ppt = calc_poly(self.mat, progression)
         self.dppt = calc_poly(self.dmat, progression)
 
     def update_probability(self, prob_last):
-        """ :param prob_last: (float)   probability of last measured angle """
+        """
+        Parameters:
+            prob_last (float): The probability of the last measured angle.
+        """
 
         # lower boundary for probability at 1%
         min_probability = 0.001

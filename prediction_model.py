@@ -2,19 +2,24 @@ import numpy as np
 
 
 class PredictionModel:
-    """ A class that calculates predicted trajectories for each goal.
+    """
+    A class that calculates predicted trajectories for each goal.
 
     Attributes:
-        goals (List)                                    List of goal instances
-        prev_p, curr_p: (NDArray[np.float64])           two measured points of the hand wrist at given time
-        prev_dp, curr_dp: (NDArray[np.float64])         directional vector at each point
+        prev_p (numpy.ndarray): Measured point of the hand wrist at time t-1.
+        curr_p (numpy.ndarray): Measured point of the hand wrist at time t.
+        prev_dp (numpy.ndarray): Directional vector at time t-1.
+        curr_dp (numpy.ndarray): Directional vector at time t.
     """
 
-    def __init__(self, goals, min_dist, min_prog):
+    def __init__(self, goals, MIN_THRESHOLDS):
         """
-        :param min_dist: (float)     minimum distance to use lower boundary
-        :param min_prog: (float)     minimum prediction progression as lower boundary
+        Parameters:
+            goals (list[Goals]): A list of instances of the Goals class.
+            MIN_THRESHOLDS (tuple): A tuple specifying the minimum distance to start calculating and the minimum
+                                    progression on the prediction trajectory.
         """
+
         self.goals = goals
 
         self.prev_p = None
@@ -22,12 +27,15 @@ class PredictionModel:
         self.prev_dp = None
         self.curr_dp = None
 
-        self.min_dist = min_dist
-        self.min_prog = min_prog
+        self.MIN_DIST = MIN_THRESHOLDS[0]
+        self.MIN_PROG = MIN_THRESHOLDS[1]
 
     def update(self, next_p):
-        """ Calculates the predicted directions for each goal by modeling a cubic polynomial curve in 3D space.
-        :param next_p: (NDArray[np.float64])    last measured point of the hand wrist
+        """
+        Calculates the predicted directions for each goal by modeling a cubic polynomial curve in 3D space.
+
+        Parameters:
+            next_p (numpy.ndarray): Last measured point of the hand wrist.
         """
 
         # calculating starts after third measurement
@@ -41,7 +49,7 @@ class PredictionModel:
             return
 
         # calculating starts after minimum distance between measurements is reached
-        if distance(self.curr_p, next_p) < self.min_dist:
+        if distance(self.curr_p, next_p) < self.MIN_DIST:
             return
 
         # shift coordinates, timestamps and derivative
@@ -58,41 +66,51 @@ class PredictionModel:
             g.set_matrices(calc_mats(self.prev_p, self.prev_dp, g.pos))
 
             # Set the progression of the current point at the trajectory path
-            g.set_progression(max(calc_progression(self.prev_p, self.curr_p, g.pos), self.min_prog))
+            g.set_progression(max(calc_progression(self.prev_p, self.curr_p, g.pos), self.MIN_PROG))
 
             # Set angles between measured and predicted direction
             g.angle = calc_angle(g.dppt, self.curr_dp)
 
 
 def point_direction(p1, p2):
-    """ Calculates the normalized direction vector of two points. """
+    """
+    Calculates the normalized direction vector between two points.
+    """
+
     p = p2 - p1
     divisor = np.linalg.norm(p)
     return p if divisor == 0 else p / np.linalg.norm(p)
 
 
 def calc_progression(prev_p, curr_p, goal):
-    """ Calculates the normalized path coordinate as point on the trajectory.
-
-    :param prev_p: (NDArray[np.float64])    measured point at t_n-1
-    :param curr_p: (NDArray[np.float64])    measured point at t_n
-    :param goal: (NDArray[np.float64])      position of goal
-
-    :return: predicted path coordinate
     """
+    Calculates the normalized path coordinate (progression) as a point on the trajectory.
+
+    Parameters:
+        prev_p (numpy.ndarray): Measured point at time t_n-1.
+        curr_p (numpy.ndarray): Measured point at time t_n.
+        goal (numpy.ndarray): Position of the goal.
+
+    Returns:
+        float: The predicted path coordinate.
+    """
+
     distance_a = np.linalg.norm(curr_p - prev_p)
     distance_b = np.linalg.norm(goal - curr_p)
     return distance_a / (distance_a + distance_b)
 
 
 def calc_mats(prev_p, prev_dp, goal):
-    """ Calculates the coefficients of the trajectory model and it's derivative.
+    """
+    Calculates the coefficients of the trajectory model and its derivative.
 
-    :param prev_p: (NDArray[np.float64])    measured point at t_n-1
-    :param prev_dp: (NDArray[np.float64])   derivative of p
-    :param goal: (NDArray[np.float64])      position of goal
+    Parameters:
+        prev_p (numpy.ndarray): Measured point at time t_n-1.
+        prev_dp (numpy.ndarray): Derivative of the point.
+        goal (numpy.ndarray): Position of the goal.
 
-    :return: coefficient matrix of the trajectory model, and it's derivative as a tuple
+    Returns:
+        tuple: A tuple containing the coefficient matrix of the trajectory model and its derivative.
     """
 
     # parameters of cubic polynomial
@@ -121,12 +139,16 @@ def calc_mats(prev_p, prev_dp, goal):
 
 
 def distance(v1, v2):
-    """ Calculates the Euclidean distance between two vectors. """
+    """
+    Calculates the Euclidean distance between two vectors.
+    """
     return np.linalg.norm(v1 - v2)
 
 
 def calc_angle(v1, v2):
-    """ Calculates the angle on x,y plane between two 3D vectors. """
+    """
+    Calculates the angle on the x,y plane between two 3D vectors.
+    """
 
     # Project vectors onto the x-y plane by ignoring z component
     v1_xy = np.array([v1[0], v1[1]])
