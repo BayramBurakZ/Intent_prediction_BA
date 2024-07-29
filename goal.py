@@ -25,7 +25,7 @@ class Goal:
     def __init__(self, number, position):
         self.num = number
         self.pos = position
-        self.active = True
+        #self.active = True
 
         # prediction model
         self.dist = 0.0
@@ -63,10 +63,10 @@ class Goal:
             prob_last (float): The probability of the last measured angle.
         """
 
-        # lower boundary for probability at 1%
-        min_probability = 0.001
+        min_probability = 0.001  # lower boundary to reset probability
+        epsilon = 0.03  # threshold value for noise tolerance
 
-        if prob_last < min_probability or self.prev_dist < self.dist:  # reset
+        if prob_last < min_probability or (self.prev_dist + epsilon) < self.dist:  # reset
             self.prob = 0.0
             self.sq = 0
 

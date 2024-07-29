@@ -55,6 +55,8 @@ class Controller:
                 numpy.ndarray: Hand wrist position as a NumPy array of float64.
                 pandas.DataFrame: Actions from the database.
         """
+        if len(data) < 2:
+            return
 
         stabilized_coordinates = data[1]  # Default value
         if self.noise_reducer:
@@ -66,9 +68,6 @@ class Controller:
         # handle action TODO: fix database implementation after update
         for d in data[2:]:
             self.action_handler.handle_action(d)
-
-        if len(data) < 2:
-            return
 
         # calculate predicted direction
         self.prediction_model.update(stabilized_coordinates)

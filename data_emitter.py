@@ -6,19 +6,22 @@ import numpy as np
 class DataEmitter:
     """ A class that represents a data emitter """
 
-    def __init__(self, data_queue, df_trajectories, df_actions, use_db):
+    def __init__(self, data_queue, df_trajectories, df_actions, DATA_EMITTER_PARAMS):
         """
         Parameters:
             data_queue (queue.Queue): The queue that stores the data to be processed.
             df_trajectories (pandas.DataFrame): DataFrame containing trajectory data.
             df_actions (pandas.DataFrame): DataFrame containing action data.
-            use_db (bool): Boolean flag to enable or disable the use of the database.
+            DATA_EMITTER_PARAMS (tuple):
+                [0]Boolean flag to enable or disable the use of the database.
+                [1]Standard deviation of noise to be added
         """
 
         self.data_queue = data_queue
         self.df_trajectories = df_trajectories
         self.df_actions = df_actions
-        self.use_db = use_db
+        self.USE_DB = DATA_EMITTER_PARAMS[0]
+        self.NOISE_SD = DATA_EMITTER_PARAMS[1]
 
     def emit_data(self):
         """
@@ -27,7 +30,7 @@ class DataEmitter:
         """
         # data to be used
         timestamps_traj = self.df_trajectories['time'].values.tolist()
-        timestamps_action = self.df_actions['time'].values.tolist() if self.use_db else []
+        timestamps_action = self.df_actions['time'].values.tolist() if self.USE_DB else []
 
         # parameters for real time emitting
         start_time, end_time = 0, 50000
@@ -51,11 +54,11 @@ class DataEmitter:
             timestamp = int(row['time'])
             data.append(timestamp)
 
-            coordinates = np.array([row['x'], row['y'], row['z']]) + add_noise(size=3)
+            coordinates = np.array([row['x'], row['y'], row['z']]) + add_noise(std_dev=self.NOISE_SD, size=3)
             data.append(coordinates)
 
             # check list of actions without skipping rows
-            if self.use_db:
+            if self.USE_DB:
                 while curr_action_index < len(timestamps_action) and timestamps_action[curr_action_index] <= curr_time:
                     action_row = self.df_actions.iloc[curr_action_index]
                     data.append(action_row)
