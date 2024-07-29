@@ -14,13 +14,13 @@ class Main:
 
         # Noise reducer type: None=0, SMA=1, WMA=2, EMA=3 ( 0 < alpha < 1 FOR EMA!)
         # window: short: 5 to 10 | medium: 20 to 50 | long: 100 to 200
-        NOISE_REDUCER_SETTINGS = (1, 10)  # (NOISE_REDUCER, WINDOW_SIZE)
+        NOISE_REDUCER_PARAMS = (1, 10)  # (NOISE_REDUCER, WINDOW_SIZE)
 
         # Minimum thresholds for calculations
-        MIN_THRESHOLDS = (0.01, 0.2)  # (MIN_DIST, MIN_PROG)
+        MODEL_PARAMS = (0.01, 0.2)  # (MIN_DIST, MIN_PROG)
 
         # Variance boundaries for normal distribution
-        VARIANCE_BOUNDS = (0.0625, 0.125)  # (MIN_VAR, MAX_VAR)
+        PROBABILITY_PARAMS = (0.0625, 0.125, 1.0)  # (MIN_VAR, MAX_VAR, OMEGA)
 
         # use database of study
         USE_DB = False
@@ -37,7 +37,7 @@ class Main:
         self.rt_result = rt_result
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue, df_trajectories, df_actions, USE_DB)
-        self.controller = Controller(df_goals, NOISE_REDUCER_SETTINGS, MIN_THRESHOLDS, VARIANCE_BOUNDS)
+        self.controller = Controller(df_goals, NOISE_REDUCER_PARAMS, MODEL_PARAMS, PROBABILITY_PARAMS)
 
     def run(self):
 

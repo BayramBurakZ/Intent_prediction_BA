@@ -12,12 +12,13 @@ class PredictionModel:
         curr_dp (numpy.ndarray): Directional vector at time t.
     """
 
-    def __init__(self, goals, MIN_THRESHOLDS):
+    def __init__(self, goals, MODEL_PARAMS):
         """
         Parameters:
             goals (list[Goals]): A list of instances of the Goals class.
-            MIN_THRESHOLDS (tuple): A tuple specifying the minimum distance to start calculating and the minimum
-                                    progression on the prediction trajectory.
+            MODEL_PARAMS (tuple): A tuple specifying
+                [0] min_distance (float): The minimum distance at which to begin calculations.
+                [1] min_progression (float): The minimum progression along the predicted trajectory.
         """
 
         self.goals = goals
@@ -27,8 +28,8 @@ class PredictionModel:
         self.prev_dp = None
         self.curr_dp = None
 
-        self.MIN_DIST = MIN_THRESHOLDS[0]
-        self.MIN_PROG = MIN_THRESHOLDS[1]
+        self.MIN_DIST = MODEL_PARAMS[0]
+        self.MIN_PROG = MODEL_PARAMS[1]
 
     def update(self, next_p):
         """

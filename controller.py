@@ -19,21 +19,27 @@ class Controller:
         action_handler (ActionHandler): An instance for manipulating the goals.
     """
 
-    def __init__(self, df, NOISE_REDUCER_SETTINGS, MIN_THRESHOLDS, VARIANCE_BOUNDS):
+    def __init__(self, df, NOISE_REDUCER_PARAMS, MODEL_PARAMS, PROBABILITY_PARAMS):
         """
         Parameters:
-            df (pandas.DataFrame): DataFrame containing goal positions and goal IDs.
-            NOISE_REDUCER_SETTINGS (tuple): A tuple specifying the type of noise reducer and its window size (or alpha).
-            MIN_THRESHOLDS (tuple): A tuple specifying the minimum distance to start calculating and
-                                    the minimum progression on the prediction trajectory.
-            VARIANCE_BOUNDS (tuple): A tuple specifying the lower and upper limits for variance in the normal distribution.
+            df (pandas.DataFrame): DataFrame containing the positions and IDs of the goals.
+            NOISE_REDUCER_PARAMS (tuple): A tuple specifying
+                [0] noise_reducer_type (int): The type of noise reduction technique to apply.
+                [1] window_size_or_alpha (float): The window size or alpha value associated with the noise reducer.
+            MODEL_PARAMS (tuple): A tuple specifying
+                [0] min_distance (float): The minimum distance at which to begin calculations.
+                [1] min_progression (float): The minimum progression along the predicted trajectory.
+            PROBABILITY_PARAMS (tuple): A tuple specifying
+                [0] variance_lower_limit (float): The lower bound for variance in the normal distribution.
+                [1] variance_upper_limit (float): The upper bound for variance in the normal distribution.
+                [2] omega (float): A parameter used in the cost function to adjust probabilities.
         """
 
         goal_data = process_df(df)
         self.goals = [Goal(number, position) for number, position in goal_data]
-        self.noise_reducer = select_noise_reducer(NOISE_REDUCER_SETTINGS)
-        self.prediction_model = PredictionModel(self.goals, MIN_THRESHOLDS)
-        self.probability_evaluator = ProbabilityEvaluator(self.goals, VARIANCE_BOUNDS)
+        self.noise_reducer = select_noise_reducer(NOISE_REDUCER_PARAMS)
+        self.prediction_model = PredictionModel(self.goals, MODEL_PARAMS)
+        self.probability_evaluator = ProbabilityEvaluator(self.goals, PROBABILITY_PARAMS)
         self.action_handler = ActionHandler(self.goals)
 
     def process_data(self, data):

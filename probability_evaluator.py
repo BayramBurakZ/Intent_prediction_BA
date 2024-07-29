@@ -7,16 +7,20 @@ class ProbabilityEvaluator:
     A class that evaluates the probability of each goal.
     """
 
-    def __init__(self, goals, VARIANCE_BOUNDS):
+    def __init__(self, goals, PROBABILITY_PARAMS):
         """
         Parameters:
             goals (list[Goals]): A list of instances of the Goals class.
-            VARIANCE_BOUNDS (tuple): A tuple specifying the lower and upper limits for variance in the normal distribution.
+            PROBABILITY_PARAMS (tuple): A tuple specifying
+                [0] variance_lower_limit (float): The lower bound for variance in the normal distribution.
+                [1] variance_upper_limit (float): The upper bound for variance in the normal distribution.
+                [2] omega (float): A parameter used in the cost function to adjust probabilities.
         """
 
         self.goals = goals
-        self.MIN_VARIANCE = VARIANCE_BOUNDS[0]
-        self.MAX_VARIANCE = VARIANCE_BOUNDS[1]
+        self.MIN_VARIANCE = PROBABILITY_PARAMS[0]
+        self.MAX_VARIANCE = PROBABILITY_PARAMS[1]
+        self.OMEGA = PROBABILITY_PARAMS[2]
 
     def update(self):
         """
@@ -32,10 +36,24 @@ class ProbabilityEvaluator:
         for g in self.goals:
             g.update_probability(stats.norm.pdf(g.angle, 0, sd_of_angles))
 
+        # apply distance cost function
+        self.dist_cost_function(self.OMEGA)
+
         # normalize probability of goals
         norm_divisor = max(1, sum(g.prob for g in self.goals))
         for g in self.goals:
-            g.normalize_probability(norm_divisor)
+            g.divide_probability(norm_divisor)
+
+    def dist_cost_function(self, omega=1.0):
+        """
+        Applies a cost function to the current probability to account for the distance between goals,
+        thereby refining the probability calculation.
+
+        Parameters:
+            omega (float): weight for the cost function.
+        """
+        for g in self.goals:
+            g.divide_probability(1 / (1 + omega * g.dist))
 
 
 def calc_sd(angles, min_variance, max_variance):

@@ -78,7 +78,7 @@ class Goal:
             self.prob *= prob_last
             self.sq += 1
 
-    def normalize_probability(self, divisor):
+    def divide_probability(self, divisor):
         self.prob /= divisor
 
     def get_stats(self):
