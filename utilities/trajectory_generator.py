@@ -80,8 +80,8 @@ def generate_trajectories_bezier(input_folder, output_folder, start_coords, hand
                 trajectory_df.to_csv(output_path, index=False)
 
 
-input_folder = r'../data/test_data/test_goal'
-output_folder = r'../data/test_data/test_trajectory'
+input_folder = r'../data/test_data_set1/test_goal'
+output_folder = r'../data/test_data_set1/test_trajectory'
 
 print('Middle:')
 start_coords = np.array([1.0, 0.0, 1.0])

@@ -203,9 +203,9 @@ def determine_status(prob_60_reached, distance_60, target_counter, other_counter
 
 
 if __name__ == "__main__":
-    goals_folder = r'../data/test_data/test_goal'
-    trajectories_folder = r'../data/test_data/test_trajectory'
-    logs_folder = r'../data/test_data/result_logs'
+    goals_folder = r'../data/test_data_set1/test_goal'
+    trajectories_folder = r'../data/test_data_set1/test_trajectory'
+    logs_folder = r'../data/test_data_set1/result_logs'
 
     test = TestIntentionRecognition(goals_folder, trajectories_folder, logs_folder)
     test.run_test()

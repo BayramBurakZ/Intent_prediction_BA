@@ -19,7 +19,7 @@ class Controller:
         action_handler (ActionHandler): An instance for manipulating the goals.
     """
 
-    def __init__(self, df, NOISE_REDUCER_PARAMS, MODEL_PARAMS, PROBABILITY_PARAMS):
+    def __init__(self, df, NOISE_REDUCER_PARAMS, MODEL_PARAMS, PROBABILITY_PARAMS, ACTION_HANDLER_PARAMS):
         """
         Parameters:
             df (pandas.DataFrame): DataFrame containing the positions and IDs of the goals.
@@ -33,6 +33,9 @@ class Controller:
                 [0] variance_lower_limit (float): The lower bound for variance in the normal distribution.
                 [1] variance_upper_limit (float): The upper bound for variance in the normal distribution.
                 [2] omega (float): A parameter used in the cost function to adjust probabilities.
+            ACTION_HANDLER_PARAMS (tuple):
+                [0] Boolean flag for Task: True for assembly and False for dismantling.
+                [1] Hand that is being tracked.
         """
 
         goal_data = process_df(df)
@@ -40,7 +43,7 @@ class Controller:
         self.noise_reducer = select_noise_reducer(NOISE_REDUCER_PARAMS)
         self.prediction_model = PredictionModel(self.goals, MODEL_PARAMS)
         self.probability_evaluator = ProbabilityEvaluator(self.goals, PROBABILITY_PARAMS)
-        self.action_handler = ActionHandler(self.goals)
+        self.action_handler = ActionHandler(self.goals, ACTION_HANDLER_PARAMS)
 
     def process_data(self, data):
         """
@@ -65,7 +68,6 @@ class Controller:
             if noise_reduction_result is not None:
                 stabilized_coordinates = noise_reduction_result  # stabilized value
 
-        # handle action TODO: fix database implementation after update
         for d in data[2:]:
             self.action_handler.handle_action(d)
 

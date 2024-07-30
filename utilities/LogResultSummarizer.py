@@ -1,7 +1,7 @@
 import os
 
-log_folder = r'../data/test_data/result_logs'
-output_file = r'../data/test_data/summary_results.log'
+log_folder = r'../data/test_data_set1/result_logs'
+output_file = r'../data/test_data_set1/summary_results.log'
 
 # result categories
 result_categories = {

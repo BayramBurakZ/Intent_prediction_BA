@@ -9,7 +9,6 @@ class Goal:
         num (int): The ID of the goal.
         pos (numpy.ndarray): The coordinates of the goal.
 
-        active (bool): The status of the goal (active or inactive).
         dist (float): The distance to the last measured hand wrist position.
         prev_dist (float): The distance to the previous measured hand wrist position.
         mat (numpy.ndarray): The trajectory to the goal as a matrix.
@@ -25,7 +24,6 @@ class Goal:
     def __init__(self, number, position):
         self.num = number
         self.pos = position
-        #self.active = True
 
         # prediction model
         self.dist = 0.0

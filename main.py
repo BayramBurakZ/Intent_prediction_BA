@@ -12,7 +12,8 @@ class Main:
     def __init__(self, path_goals, path_trajectories, path_actions=r'data/db_actions/action_empty.csv',
                  rt_result=False):
         """
-        Main class responsible for initializing file paths and parameters, as well as setting up data emitter and controller objects.
+        Main class responsible for initializing file paths and parameters, as well as setting up data emitter and
+         controller objects.
 
         Parameters:
             path_goals (str): The file path to the data file containing goal locations.
@@ -32,7 +33,7 @@ class Main:
         NOISE_REDUCER_PARAMS = (1, 10)  # (NOISE_REDUCER, WINDOW_SIZE)
 
         """
-        Minimum thresholds for prediction model calculations
+        Minimum thresholds for prediction model calculations.
         standard values: (0.01,0.15)
         
         MODEL_PARAMS (tuple): A tuple specifying
@@ -53,12 +54,19 @@ class Main:
         PROBABILITY_PARAMS = (0.0625, 0.125, 1.0)  # (MIN_VAR, MAX_VAR, OMEGA)
 
         """
-        emitter uses actions from database and standard deviation of noise to be added
+        Emitter uses actions from database and standard deviation of noise to be added.
         DATA_EMITTER_PARAMS (tuple):
-                [0]Boolean flag to enable or disable the use of the database.
-                [1]Standard deviation of noise to be added
+                [0] Boolean flag to enable or disable the use of the database.
+                [1] Standard deviation of noise to be added
         """
-        DATA_EMITTER_PARAMS = (False, 0.01)
+        DATA_EMITTER_PARAMS = (True, 0.00)
+
+        """
+        ACTION_HANDLER_PARAMS (tuple):
+                [0] Boolean flag for Task: True for assembly and False for dismantling.
+                [1] Hand that is being tracked.
+        """
+        ACTION_HANDLER_PARAMS = (True, 'right')
 
         # all goal positions and ids are saved in csv->(ID, x, y, z)
         df_goals = pd.read_csv(path_goals)
@@ -66,13 +74,14 @@ class Main:
         # CSV with timestamp and coordinates of hand wrist
         df_trajectories = pd.read_csv(path_trajectories)
 
-        # CSV with actions from database
+        # CSV with actions from database. None if database is disabled
         df_actions = pd.read_csv(path_actions) if DATA_EMITTER_PARAMS[0] else None
 
         self.rt_result = rt_result
         self.data_queue = queue.Queue()
         self.data_emitter = DataEmitter(self.data_queue, df_trajectories, df_actions, DATA_EMITTER_PARAMS)
-        self.controller = Controller(df_goals, NOISE_REDUCER_PARAMS, MODEL_PARAMS, PROBABILITY_PARAMS)
+        self.controller = Controller(df_goals, NOISE_REDUCER_PARAMS, MODEL_PARAMS, PROBABILITY_PARAMS,
+                                     ACTION_HANDLER_PARAMS)
 
     def run(self):
 
@@ -94,8 +103,8 @@ class Main:
                     results.append(result)
 
                     if self.rt_result:
-                        print(result)  # time, ids, probabilities, samples, distances, angles, uncategorized
-
+                        # print(result)  # time, ids, probabilities, samples, distances, angles, uncategorized
+                        process_print_list(result)  # sorted and only time/frame, uncategorized, (id/probability)
             except queue.Empty:
                 print("wait for data...")
                 time.sleep(0.2)
@@ -103,15 +112,35 @@ class Main:
         return results
 
 
+def process_print_list(data):
+    """ Prints sorted data for better readability."""
+
+    # Extract the relevant parts from the data
+    timestamps = data[0]
+    uncat = data[-1]
+    ids = data[1]
+    prob = data[2]
+
+    paired_elements = list(zip(ids, prob))
+
+    # Sort the list of tuples by the second element (probabilities) in descending order
+    sorted_paired_elements = sorted(paired_elements, key=lambda x: x[1], reverse=True)
+
+    # Prepare the output in one line
+    output = f"time: {timestamps}, frame:{int(timestamps / 40)}, uncat: {uncat}, " + ", ".join(
+        f"({num}, {prob})" for num, prob in sorted_paired_elements)
+    print(output)
+
+
 if __name__ == "__main__":
     # all goal positions and ids are saved in csv->(ID, x, y, z)
-    path_goals = r'data/test_data/test_goal/3_6.csv'
+    path_goals = r'data/study/goals/goals.csv'
 
     # CSV with timestamp and coordinates of hand wrist
-    path_trajectories = r'data/test_data/test_trajectory/3_6_1_11.csv'
+    path_trajectories = r'data/study/right_hand/right_9.csv'
 
     # CSV with actions from database
-    path_actions = r'data/study/db_actions/action_31612_0.csv'
+    path_actions = r'data/test_data_study/test_action/31612_0_0.csv'
 
     main = Main(path_goals, path_trajectories, path_actions, True)
     results = main.run()

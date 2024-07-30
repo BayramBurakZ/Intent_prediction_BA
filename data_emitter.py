@@ -33,7 +33,7 @@ class DataEmitter:
         timestamps_action = self.df_actions['time'].values.tolist() if self.USE_DB else []
 
         # parameters for real time emitting
-        start_time, end_time = 0, 50000
+        start_time, end_time = 20377, 120097
         curr_time = start_time
         time_step = 100  # 17 ~ 60hz, 100 = 10hz
         speed = 0.001  # 0.1 (fast) < 1.0 (normal) < 10.0 (slow)
