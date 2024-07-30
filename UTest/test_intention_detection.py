@@ -39,6 +39,7 @@ class TestIntentionRecognition:
             if file_name.startswith(goal_prefix):
                 file_path = os.path.join(self.trajectories_folder, file_name)
                 trajectory_files.append(file_path)
+
         return trajectory_files
 
     def run_test(self):
@@ -107,7 +108,6 @@ class TestIntentionRecognition:
         prob_60_reached = False  # target reached 60% probability
         distance_60 = sample_size_60 = time_60 = None  # distance, sample size and timestamp at 60% probability
 
-        #
         target_counter = other_counter = 0
         for i, prob in enumerate(probabilities_target):
             # check for each measurement if the target or another goal had the highest probability

@@ -13,8 +13,12 @@ class DataEmitter:
             df_trajectories (pandas.DataFrame): DataFrame containing trajectory data.
             df_actions (pandas.DataFrame): DataFrame containing action data.
             DATA_EMITTER_PARAMS (tuple):
-                [0]Boolean flag to enable or disable the use of the database.
-                [1]Standard deviation of noise to be added
+                [0] Boolean flag to enable or disable the use of the database.
+                [1] Standard deviation of noise to be added
+                [2] Start time
+                [3] End time
+                [4] Time step (17 ~ 60hz, 100 = 10hz)
+                [5] Real time speed (0.1 (fast) < 1.0 (normal) < 10.0 (slow))
         """
 
         self.data_queue = data_queue
@@ -22,6 +26,10 @@ class DataEmitter:
         self.df_actions = df_actions
         self.USE_DB = DATA_EMITTER_PARAMS[0]
         self.NOISE_SD = DATA_EMITTER_PARAMS[1]
+        self.START_TIME = DATA_EMITTER_PARAMS[2]
+        self.END_TIME = DATA_EMITTER_PARAMS[3]
+        self.TIME_STEP = DATA_EMITTER_PARAMS[4]
+        self.SPEED = DATA_EMITTER_PARAMS[5]
 
     def emit_data(self):
         """
@@ -33,10 +41,10 @@ class DataEmitter:
         timestamps_action = self.df_actions['time'].values.tolist() if self.USE_DB else []
 
         # parameters for real time emitting
-        start_time, end_time = 20377, 120097
+        start_time, end_time = self.START_TIME, self.END_TIME
         curr_time = start_time
-        time_step = 100  # 17 ~ 60hz, 100 = 10hz
-        speed = 0.001  # 0.1 (fast) < 1.0 (normal) < 10.0 (slow)
+        time_step = self.TIME_STEP
+        speed = self.SPEED
 
         curr_traj_index, curr_action_index = 0, 0
 

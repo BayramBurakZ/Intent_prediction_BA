@@ -30,7 +30,7 @@ class Main:
                 [0] noise_reducer_type (int): The type of noise reduction technique to apply.
                 [1] window_size_or_alpha (float): The window size or alpha value associated with the noise reducer.
         """
-        NOISE_REDUCER_PARAMS = (1, 10)  # (NOISE_REDUCER, WINDOW_SIZE)
+        NOISE_REDUCER_PARAMS = (0, 10)  # (NOISE_REDUCER, WINDOW_SIZE)
 
         """
         Minimum thresholds for prediction model calculations.
@@ -58,8 +58,12 @@ class Main:
         DATA_EMITTER_PARAMS (tuple):
                 [0] Boolean flag to enable or disable the use of the database.
                 [1] Standard deviation of noise to be added
+                [2] Start time
+                [3] End time
+                [4] Time step (17 ~ 60hz, 100 = 10hz)
+                [5] Real time speed (0.001(fastest) < 0.1 (fast) < 1.0 (normal) < 10.0 (slow))
         """
-        DATA_EMITTER_PARAMS = (True, 0.00)
+        DATA_EMITTER_PARAMS = (False, 0.01, 0, 50000, 100, 0.001)
 
         """
         ACTION_HANDLER_PARAMS (tuple):
@@ -103,7 +107,7 @@ class Main:
                     results.append(result)
 
                     if self.rt_result:
-                        # print(result)  # time, ids, probabilities, samples, distances, angles, uncategorized
+                        #print(result)  # time, ids, probabilities, samples, distances, angles, uncategorized
                         process_print_list(result)  # sorted and only time/frame, uncategorized, (id/probability)
             except queue.Empty:
                 print("wait for data...")
