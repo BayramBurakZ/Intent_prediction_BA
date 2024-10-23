@@ -1,3 +1,5 @@
+This program processes target positions and wrist trajectories over time to predict which target the hand is most likely to move toward. Based on the positions of the hand and the goals, it calculates the probabilities of each goal being reached by the hand over time, helping to identify the most probable target.
+
 Execution Instructions for Code (Python 3.12)
 
 1. Using Study Data (in main.py):
