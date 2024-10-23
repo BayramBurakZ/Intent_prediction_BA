@@ -1,5 +1,5 @@
 from collections import deque
-
+from typing import Union
 import numpy as np
 
 """
@@ -21,7 +21,8 @@ In general, a larger window (alpha) results in smoother data but is less respons
 
 
 class SimpleMovingAverage:
-    def __init__(self, window_size):
+    def __init__(self, window_size: float) -> None:
+        window_size = int(window_size)
         if window_size < 1:
             raise ValueError("window_size must be greater than 1.")
 
@@ -33,7 +34,7 @@ class SimpleMovingAverage:
         self.sum_y = 0.0
         self.sum_z = 0.0
 
-    def add(self, coordinates):
+    def add(self, coordinates: np.ndarray) -> None:
         if len(self.x_points) == self.window_size:  # delete the oldest value from sum
             self.sum_x -= self.x_points[0]
             self.sum_y -= self.y_points[0]
@@ -47,13 +48,14 @@ class SimpleMovingAverage:
         self.z_points.append(coordinates[2])
         self.sum_z += coordinates[2]
 
-    def get(self):
+    def get(self) -> Union[np.ndarray, None]:
         count = len(self.x_points)
         return np.array([self.sum_x / count, self.sum_y / count, self.sum_z / count]) if count != 0 else None
 
 
 class WeightedMovingAverage:
-    def __init__(self, window_size):
+    def __init__(self, window_size: float) -> None:
+        window_size = int(window_size)
         if window_size < 1:
             raise ValueError("window_size must be greater than 1.")
 
@@ -64,12 +66,12 @@ class WeightedMovingAverage:
         self.y_points = deque(maxlen=window_size)
         self.z_points = deque(maxlen=window_size)
 
-    def add(self, coordinates):
+    def add(self, coordinates: np.ndarray) -> None:
         self.x_points.append(coordinates[0])
         self.y_points.append(coordinates[1])
         self.z_points.append(coordinates[2])
 
-    def get(self):
+    def get(self) -> Union[np.ndarray, None]:
         if len(self.x_points) == 0:
             return None
 
@@ -81,7 +83,7 @@ class WeightedMovingAverage:
 
 
 class ExponentialMovingAverage:
-    def __init__(self, alpha):
+    def __init__(self, alpha: float) -> None:
         if alpha > 1 or alpha < 0:
             raise ValueError("alpha must be between 0 and 1.")
 
@@ -90,7 +92,7 @@ class ExponentialMovingAverage:
         self.ema_y = None
         self.ema_z = None
 
-    def add(self, coordinates):
+    def add(self, coordinates: np.ndarray) -> None:
         if self.ema_x is None:  # Initialize EMA with the first data point
             self.ema_x = coordinates[0]
             self.ema_y = coordinates[1]
@@ -100,5 +102,5 @@ class ExponentialMovingAverage:
             self.ema_y = self.alpha * coordinates[1] + (1 - self.alpha) * self.ema_y
             self.ema_z = self.alpha * coordinates[2] + (1 - self.alpha) * self.ema_z
 
-    def get(self):
+    def get(self) -> Union[np.ndarray, None]:
         return np.array([self.ema_x, self.ema_y, self.ema_z]) if self.ema_x is not None else None

@@ -1,12 +1,18 @@
 import time
-
+import queue
+import pandas as pd
 import numpy as np
 
 
 class DataEmitter:
     """ A class that represents a data emitter """
 
-    def __init__(self, data_queue, df_trajectories, df_actions, DATA_EMITTER_PARAMS):
+    def __init__(self,
+                 data_queue: queue.Queue,
+                 df_trajectories: pd.DataFrame,
+                 df_actions: pd.DataFrame,
+                 DATA_EMITTER_PARAMS: tuple[bool, float, int, int, int, float, str, bool]
+                 ) -> None:
         """
         Parameters:
             data_queue (queue.Queue): The queue that stores the data to be processed.
@@ -19,6 +25,8 @@ class DataEmitter:
                 [3] End time
                 [4] Time step (17 ~ 60hz, 100 = 10hz)
                 [5] Real time speed (0.1 (fast) < 1.0 (normal) < 10.0 (slow))
+                [6] String identifier of tracked hand, relevant of the set of next goals
+                [7] Boolean flag indicating assembly/disassembly
         """
 
         self.data_queue = data_queue
@@ -30,8 +38,10 @@ class DataEmitter:
         self.END_TIME = DATA_EMITTER_PARAMS[3]
         self.TIME_STEP = DATA_EMITTER_PARAMS[4]
         self.SPEED = DATA_EMITTER_PARAMS[5]
+        self.TRACKED_HAND = DATA_EMITTER_PARAMS[6]
+        self.IS_ASSEMBLY = DATA_EMITTER_PARAMS[7]
 
-    def emit_data(self):
+    def emit_data(self) -> None:
         """
         Streams data from DataFrames at specified intervals to simulate real-time measurements or to quickly process
         data for testing purposes.
@@ -45,32 +55,54 @@ class DataEmitter:
         curr_time = start_time
         time_step = self.TIME_STEP
         speed = self.SPEED
-
-        curr_traj_index, curr_action_index = 0, 0
+        curr_traj_index, curr_action_index = 0, -1
+        next_action_index = -1
 
         # emit data until end of data or end time is reached
         while curr_time < end_time - time_step and curr_traj_index < len(timestamps_traj):
             data = []
             curr_time += time_step
+            same_data = True
 
-            # find the closest trajectory index to current time (can skip rows)
-            while curr_traj_index < len(timestamps_traj) and timestamps_traj[curr_traj_index] <= curr_time:
-                curr_traj_index += 1
+            # Find the next trajectory index that is after the current time
+            for index in range(curr_traj_index, len(timestamps_traj)):
+                if timestamps_traj[index] > curr_time:
+                    break
+
+                curr_traj_index = index + 1
+                same_data = False
+
+            if same_data:
+                continue
 
             row = self.df_trajectories.iloc[curr_traj_index - 1]
+            data.append(int(row['time']))
 
-            timestamp = int(row['time'])
-            data.append(timestamp)
-
-            coordinates = np.array([row['x'], row['y'], row['z']]) + add_noise(std_dev=self.NOISE_SD, size=3)
+            coordinates = np.array([float(row['x']), float(row['y']), float(row['z'])]) + add_noise(
+                std_dev=self.NOISE_SD, size=3)
             data.append(coordinates)
 
-            # check list of actions without skipping rows
-            if self.USE_DB:
-                while curr_action_index < len(timestamps_action) and timestamps_action[curr_action_index] <= curr_time:
-                    action_row = self.df_actions.iloc[curr_action_index]
-                    data.append(action_row)
-                    curr_action_index += 1
+            # Check list of actions without skipping rows
+            if self.USE_DB and (next_action_index == -1 or timestamps_action[curr_action_index] <= data[0]):
+                for index in range(curr_action_index + 1, len(timestamps_action)):
+                    # add all actions up to current timestamp
+
+                    if timestamps_action[index] > data[0]:
+                        if next_action_index <= curr_action_index:
+                            relevant_action_type = 'pick' if self.IS_ASSEMBLY else 'place'
+
+                            # find next action of tracked hand to get goals
+                            for index2 in range(curr_action_index + 1, len(timestamps_action)):
+                                hand = self.df_actions['hand'][index2]
+                                action_type = self.df_actions['action_id'][index2].split("_")[0]
+                                if hand == self.TRACKED_HAND and action_type == relevant_action_type:
+                                    data.append(self.df_actions.iloc[index2])
+                                    next_action_index = index2
+                                    break
+                        break
+
+                    data.append(self.df_actions.iloc[index])
+                    curr_action_index = index
 
             self.data_queue.put(data)  # save in queue
 
@@ -80,13 +112,9 @@ class DataEmitter:
         self.data_queue.put(-1)
 
 
-def add_noise(mean=0.0, std_dev=0.01, size=1):
+def add_noise(mean: float = 0.0, std_dev: float = 0.0, size: int = 1) -> float:
     """
     Adds Gaussian noise to the input values.
-
-    The global root-mean-square error with wearable sensors and tracking cameras (such as Hololens 2) ranges from
-    0.01 meters (with correction techniques) to 0.0375 meters (without correction techniques), according to
-    Contreras-González et al., 2020 and Soares et al., 2021.
 
     Parameters:
         mean (float): The mean of the Gaussian noise in meters.

@@ -1,0 +1,41 @@
+Result Type: Success
+Count: 773
+Average Highest Probability: 99.66
+Average Sample: 15.17
+Average Distance: 0.98
+
+Result Type: Pass1
+Count: 282
+Average Highest Probability: 98.27
+Average Sample: 31.28
+Average Distance: 0.67
+
+Result Type: Pass2
+Count: 0
+Average Highest Probability: 0.00
+Average Sample: 0.00
+Average Distance: 0.00
+
+Result Type: Fail
+Count: 25
+Average Highest Probability: 48.45
+Average Sample: 0.00
+Average Distance: 0.00
+
+Timestamp Quantiles:
+1-249:
+Count: 264
+Percentage: 24.44%
+
+250-499:
+Count: 480
+Percentage: 44.44%
+
+500-749:
+Count: 270
+Percentage: 25.00%
+
+750-1000:
+Count: 41
+Percentage: 3.80%
+
